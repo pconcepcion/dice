@@ -1,0 +1,1 @@
+{"name":"Dice","tagline":"Dide roll generators written in go","body":"Basic dice rolling program written in Go\r\n\r\n## TODO:\r\n* Handle Dice Expressions\r\n* Dice HTTP Server\r\n","google":"","note":"Don't delete this file! It's used internally to help with page regeneration."}
