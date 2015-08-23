@@ -20,64 +20,67 @@ type Dice struct {
 	sides int
 }
 
+// NewDice creates a ne Dice object with the given number of sides
 func NewDice(sides int) *Dice {
 	return &Dice{sides}
 }
+
+// Roll the dice and return the result
 func (d *Dice) Roll() int {
 	return rand.Intn(d.sides) + 1
 }
 
-// Returns a random integer between 1 and 2
+// D2 returns a random integer between 1 and 2
 func D2() int {
 	return rand.Intn(2) + 1
 }
 
-// Returns a random integer between 1 and 4
+// D4 returns a random integer between 1 and 4
 func D4() int {
 	return rand.Intn(4) + 1
 }
 
-// Returns a random integer between 1 and 6
+// D6 returns a random integer between 1 and 6
 func D6() int {
 	return rand.Intn(6) + 1
 }
 
-// Returns a random integer between 1 and 8
+// D8 returns a random integer between 1 and 8
 func D8() int {
 	return rand.Intn(8) + 1
 }
 
-// Returns a random integer between 1 and 10
+// D10 returns a random integer between 1 and 10
 func D10() int {
 	return rand.Intn(10) + 1
 }
 
-// Returns a random integer between 1 and 12
+// D12 returns a random integer between 1 and 12
 func D12() int {
 	return rand.Intn(12) + 1
 }
 
-// Returns a random integer between 1 and 20
+// D20 returns a random integer between 1 and 20
 func D20() int {
 	return rand.Intn(20) + 1
 }
 
-// Returns a random integer between 1 and 30
+// D30 returns a random integer between 1 and 30
 func D30() int {
 	return rand.Intn(30) + 1
 }
 
-// Returns a random integer between 1 and 100
+// D100 returns a random integer between 1 and 100
 func D100() int {
 	return rand.Intn(100) + 1
 }
 
-// Returns a random integer between 1 and 200
+// D200 returns a random integer between 1 and 200
 func D200() int {
 	return rand.Intn(200) + 1
 }
 
-// Returns a random integer between 1 and 1000
+// D1000 returns a random integer between 1 and 1000
 func D1000() int {
 	return rand.Intn(1000) + 1
 }
