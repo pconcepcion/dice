@@ -283,15 +283,15 @@ func Test10000000D1000(t *testing.T) {
 
 // Test a dice with random sideso
 func TestRandomDice(t *testing.T) {
-        // Create a random dice
+	// Create a random dice
 	var sides int
 	sides = D100()
 	var expectedAverage float64
 	expectedAverage = float64(sides+1) / 2.0
 	d := NewDice(sides)
-        
-        // Test it
-        var sum int
+
+	// Test it
+	var sum int
 	for i := 0; i < 10000000; i++ {
 		sum += d.Roll()
 	}
