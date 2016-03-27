@@ -1,0 +1,19 @@
+DigitExcludingZero ::= [1-9]
+Digit ::= [0-9]
+Dice ::= "d"
+Explode ::= "e"
+Keep ::= "k"
+Open ::= "o"
+Reroll ::= "r"
+Success ::= "s"
+ExplodingSuccess ::= "es"
+Natural  ::= DigitExcludingZero Digit*
+Integer ::= "0" |  "-"?  Natural 
+Modifier ::=  Keep Natural | Explode  | ExplodingSuccess Natural | Open | Reroll  Natural| Success Natural
+NumDices ::= Natural
+NumSides ::= Natural
+Constant ::= [-+] Integer
+BasicDiceExpression ::= NumDices? Dice NumSides Modifier? 
+ExpressionOperators ::=  [-*/+]
+DiceExpressiion ::= BasicDiceExpression (ExpressionOperators BasicDiceExpression)*
+
