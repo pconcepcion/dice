@@ -7,6 +7,9 @@ package rpg
 
 import (
 	"fmt"
+	"os"
+	"strings"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -62,7 +65,7 @@ type lexer struct {
 	input  string     // the string to tokeninze
 	start  int        // starting position of the current token
 	pos    int        // current position in the input
-	widht  int        // widht of the last rune redaded
+	width  int        // width of the last rune redaded
 	tokens chan Token // channel of  scanned tokens
 }
 
@@ -80,6 +83,9 @@ func lex(input string) (*lexer, chan Token) {
 	l := &lexer{
 		input:  input,
 		tokens: make(chan Token),
+		pos:    0,
+		width:  0,
+		start:  0,
 	}
 	go l.run()
 	return l, l.tokens
@@ -92,22 +98,30 @@ func (l *lexer) emit(t tokenType) {
 	l.start = l.pos
 }
 
-/// next returns the next rune in the input or eof
-func (l *lexer) next() (rune, int) {
-	var r rune
-	if l.pos >= len(l.input) {
-		l.widht = 0
-		return eof, 0
-	}
-	r, l.widht = utf8.DecodeRuneInString(l.input[l.pos:])
-	l.pos += l.widht
-	return r, l.widht
+func (l lexer) emitError(message string) {
+	//fmt.Fprintf(os.Stderr, "Lexer error: %v\n", l)
+	fmt.Fprintf(os.Stderr, message)
+	//e := Token{tokenError, message}
+	l.emit(tokenError)
 }
 
-// Character classes
+func (l lexer) emitErrorf(format string, args ...interface{}) {
+	// fmt.Fprintf(os.Stderr, "Lexer error: %v\n", l)
+	fmt.Fprintf(os.Stderr, format, args)
+	//e := Token{tokenError, fmt.Sprintf(format, args)}
+	l.emit(tokenError)
+}
 
-func isWhitespace(ch rune) bool {
-	return ch == ' ' || ch == '\t' || ch == '\n'
+/// next returns the next rune in the input or eof
+func (l *lexer) next() rune {
+	var r rune
+	if l.pos >= len(l.input) {
+		l.width = 0
+		return eof
+	}
+	r, l.width = utf8.DecodeRuneInString(l.input[l.pos:])
+	l.pos += l.width
+	return r
 }
 
 // ignore skips over the pending input before this point.
@@ -117,7 +131,7 @@ func (l *lexer) ignore() {
 
 // peek returns but does not consume
 // the next rune in the input.
-func (l *lexer) peek() int {
+func (l *lexer) peek() rune {
 	rune := l.next()
 	l.backup()
 	return rune
@@ -153,35 +167,46 @@ func (l *lexer) acceptRun(valid string) {
 func startState(l *lexer) stateFn {
 	switch r := l.next(); {
 	case unicode.IsNumber(r):
-		return numDicesState
+		return numberState // numDicesState
 	case r == eof:
-		return l.errorf("empty action")
+		//return l.emitError("empty action")
+		l.emit(tokenEOF)
+		return nil // finish the lexer
 	case r == 'd':
-		return diceState
+		l.emit(tokenDice)
+		return numberState
+		//return diceState
 	}
-	return l.errorf("unexpected token %s, expected either 'd' or number", l.next())
+	l.emitErrorf("unexpected token %s, expected either 'd' or number\n", l.next())
+	return nil
 }
 
-// numDicesState gets the nuber of dices and emits the token the next state should be diceState
-func numbmerState(l *lexer) stateFn {
+// numberState gets the nuber of dices and emits the token the next state should be diceState
+func numberState(l *lexer) stateFn {
 	digits := "0123456789"
 	// If starts with 0 must be a 0 and and the next can't be a number
-	if l.accept("0") && strings.IndexRune(digits, l.peek()) {
-		return l.errorf("invalid sequence 0%s", l.peek())
-	}
+	/*if l.accept("0") && (strings.IndexRune(digits, l.peek()) != -1) {
+		return l.errorf("invalid sequence 0%s\n", l.peek())
+	}*/
 	l.acceptRun(digits)
 	l.emit(tokenNumber)
 
 	switch r := l.next(); {
-	case r == "d":
+	case r == 'd':
+		l.emit(tokenDice)
+		return numberState
+		/*l.backup()
 		return diceState
-	case strings.IndexRune("keors", r):
+		*/
+	case strings.IndexRune("keors", r) != -1:
+		l.backup()
 		return modifierState
 	case r == eof:
 		l.emit(tokenEOF)
 		return nil // finish the lexer
 	}
-	return l.errrof("unexpected token after num")
+	l.emitError("unexpected token after num\n")
+	return nil
 }
 
 // modifierState extracts one of the valid modifiers:
@@ -191,40 +216,43 @@ func numbmerState(l *lexer) stateFn {
 // * o = Open
 // * s = Success
 // * r = Reroll
-func modifierSate(l *lexer) {
+func modifierState(l *lexer) stateFn {
 	if l.accept("e") {
 		if l.accept("s") {
 			// es
-			l.emmit(modifierToken)
+			l.emit(tokenModifier)
 			return numberState
 		}
 		// e
-		l.emmit(modifierToken)
+		l.emit(tokenModifier)
 		return startState
 	}
 	if l.accept("o") {
-		l.emmit(modifierToken)
+		l.emit(tokenModifier)
 		return startState
 	}
 	// Keep, Rerroll and Success need a number afterwards
 	if l.accept("krs") {
-		l.emmit(modifierToken)
+		l.emit(tokenModifier)
 		return numberState
 	}
-	return l.errrof("unexpected modifier token")
+	l.emitError("unexpected modifier token\n")
+	return nil
 }
 
 // diceState accepts the "d" marking the dice token and emits the token, shuld be numberState
 func diceState(l *lexer) stateFn {
 	if l.accept("d") {
 		l.emit(tokenDice)
-		return numberStated
+		return numberState
 	}
-	return l.errrof("expected dice token, got %s", l.peek())
+	l.emitErrorf("expected dice token, got %s\n", l.peek())
+	return nil
 }
 
-// lexText scanns regular text until a different token is found
-func lexText(l *lexer) stateFn {
+// Character classes
 
-	return nil
+// isWhitespace returns true when theceived rune is a whitespace
+func isWhitespace(ch rune) bool {
+	return ch == ' ' || ch == '\t' || ch == '\n'
 }
