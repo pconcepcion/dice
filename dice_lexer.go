@@ -98,13 +98,6 @@ func (l *lexer) emit(t tokenType) {
 	l.start = l.pos
 }
 
-func (l lexer) emitError(message string) {
-	//fmt.Fprintf(os.Stderr, "Lexer error: %v\n", l)
-	fmt.Fprintf(os.Stderr, message)
-	//e := Token{tokenError, message}
-	l.emit(tokenError)
-}
-
 func (l lexer) emitErrorf(format string, args ...interface{}) {
 	// fmt.Fprintf(os.Stderr, "Lexer error: %v\n", l)
 	fmt.Fprintf(os.Stderr, format, args)
@@ -169,7 +162,7 @@ func startState(l *lexer) stateFn {
 	case unicode.IsNumber(r):
 		return numberState // numDicesState
 	case r == eof:
-		//return l.emitError("empty action")
+		//return l.emitErrorf("empty action")
 		l.emit(tokenEOF)
 		return nil // finish the lexer
 	case r == 'd':
@@ -177,7 +170,7 @@ func startState(l *lexer) stateFn {
 		return numberState
 		//return diceState
 	}
-	l.emitErrorf("unexpected token %s, expected either 'd' or number\n", l.next())
+	l.emitErrorf("unexpected token %v, expected either 'd' or number\n", l.next())
 	return nil
 }
 
@@ -205,12 +198,12 @@ func numberState(l *lexer) stateFn {
 		l.emit(tokenEOF)
 		return nil // finish the lexer
 	}
-	l.emitError("unexpected token after num\n")
+	l.emitErrorf("unexpected token after num\n")
 	return nil
 }
 
 // modifierState extracts one of the valid modifiers:
-// * k = Kepp
+// * k = Keep
 // * e = Explode
 // * es = Exploding success
 // * o = Open
@@ -236,12 +229,12 @@ func modifierState(l *lexer) stateFn {
 		l.emit(tokenModifier)
 		return numberState
 	}
-	l.emitError("unexpected modifier token\n")
+	l.emitErrorf("unexpected modifier token\n")
 	return nil
 }
 
 // diceState accepts the "d" marking the dice token and emits the token, shuld be numberState
-func diceState(l *lexer) stateFn {
+/*func diceState(l *lexer) stateFn {
 	if l.accept("d") {
 		l.emit(tokenDice)
 		return numberState
@@ -249,7 +242,7 @@ func diceState(l *lexer) stateFn {
 	l.emitErrorf("expected dice token, got %s\n", l.peek())
 	return nil
 }
-
+*/
 // Character classes
 
 // isWhitespace returns true when theceived rune is a whitespace
