@@ -18,7 +18,6 @@ const (
 
 // SimpleDiceExpression represents a dice expression with just one type of dice
 // dice expresions are based on the ones in RPtools ( http://lmwcs.com/rptools/wiki/Dice_Expressions )
-//
 type SimpleDiceExpression struct {
 	expressionText string // Text that represents the dice expression
 	numDices       int    // number of dices
@@ -33,15 +32,23 @@ type SimpleDiceExpression struct {
 	constant       int    // constant value
 }
 
+var baseRegEx *regexp.Regexp
+var constantRegexp *regexp.Regexp
+var modifiersRegEx *regexp.Regexp
+
+// Compiles the regular expressions
+func init() {
+	baseRegEx = regexp.MustCompile(`(?P<numDices>\d*)d(?P<numSides>\d+)(?P<modifiers>.*)`)
+	constantRegexp = regexp.MustCompile(`^\d+$`)
+	modifiersRegEx = regexp.MustCompile(`(?P<modifier>[dekors])(?P<value>\d*)(?P<addSubstract>[+-]*)(?P<constant>\d*)`)
+}
+
 /**
  * Parse a simple dice expresion and save the relevant information on the struct
  */
 func (sde *SimpleDiceExpression) parse() ([]string, error) {
 	var err error
 	sde.expressionText = strings.TrimSpace(sde.expressionText)
-	// TODO: regular expresions should probably be compiled once at the initialization of the package
-	re := regexp.MustCompile(`(?P<numDices>\d*)d(?P<numSides>\d+)(?P<modifiers>.*)`)
-	constantRegexp := regexp.MustCompile(`^\d+$`)
 	// Check if it's a constant dice expression
 	if constantRegexp.MatchString(sde.expressionText) == true {
 		sde.constant, err = strconv.Atoi(sde.expressionText)
@@ -50,7 +57,7 @@ func (sde *SimpleDiceExpression) parse() ([]string, error) {
 		}
 		return []string{sde.expressionText, "", ""}, nil
 	}
-	dices := re.FindStringSubmatch(strings.TrimSpace(sde.expressionText))
+	dices := baseRegEx.FindStringSubmatch(strings.TrimSpace(sde.expressionText))
 	if dices == nil {
 		return nil, errors.New("Invalid dice expression")
 	}
@@ -81,8 +88,7 @@ func (sde *SimpleDiceExpression) parse() ([]string, error) {
  */
 func (sde *SimpleDiceExpression) parseModifiers(modifierString string) ([]string, error) {
 	var err error
-	re := regexp.MustCompile(`(?P<modifier>[dekors])(?P<value>\d*)(?P<addSubstract>[+-]*)(?P<constant>\d*)`)
-	modifiers := re.FindStringSubmatch(modifierString)
+	modifiers := modifiersRegEx.FindStringSubmatch(modifierString)
 	fmt.Printf("modifiers %s %#v\n", modifierString, modifiers)
 	if modifiers == nil {
 		return nil, errors.New("Invalid dice expression")
