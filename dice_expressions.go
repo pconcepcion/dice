@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	wholeExpression = iota
+	emptyExpression = iota
+	wholeExpression
 	numDicesPosition
 	numSidesPosition
 	modifierExpression
@@ -43,44 +44,120 @@ func init() {
 	modifiersRegEx = regexp.MustCompile(`(?P<modifier>[dekors])(?P<value>\d*)(?P<addSubstract>[+-]*)(?P<constant>\d*)`)
 }
 
+// handleTokenMoffier handles the Modifier possible extra number
+func (sde *SimpleDiceExpression) handleTokenModifier(tok, nextToken Token) {
+	switch nextToken.typ {
+	case tokenNumber:
+		switch tok.val {
+		case "k":
+			sde.keep, _ = strconv.Atoi(nextToken.val)
+		case "s":
+			sde.target, _ = strconv.Atoi(nextToken.val)
+		case "es":
+			sde.explodeResult = sde.sides
+			sde.target, _ = strconv.Atoi(nextToken.val)
+		case "r":
+			sde.rerollH, _ = strconv.Atoi(nextToken.val)
+		default:
+			panic("Unexpected modifier")
+		}
+	case tokenEOF:
+		switch tok.val {
+		case "e":
+			sde.explodeResult = sde.sides
+		case "o":
+			sde.explodeResult = sde.sides
+		}
+	}
+}
+
+// handlelTokenNumber handles the second or third tokenNumber
+func (sde *SimpleDiceExpression) handleTokenNumber(tok, nextToken Token) {
+	switch nextToken.typ {
+	case tokenDice:
+		panic("Unexpected diceToken")
+	case tokenModifier:
+		sde.sides, _ = strconv.Atoi(tok.val)
+	case tokenEOF:
+		if sde.sides == 0 {
+			sde.sides, _ = strconv.Atoi(tok.val)
+		}
+		// if not the caller would know the modifier and assing to the propper place the value
+	}
+}
+
+// handleInitialTokenNumber handles the first token when it's a number
+func (sde *SimpleDiceExpression) handleInitialTokenNumber(tok, nextToken Token) {
+	switch nextToken.typ {
+	case tokenEOF:
+		sde.constant, _ = strconv.Atoi(tok.val)
+	case tokenDice:
+		sde.numDices, _ = strconv.Atoi(tok.val)
+	}
+}
+
 /**
  * Parse a simple dice expresion and save the relevant information on the struct
  */
-func (sde *SimpleDiceExpression) parse() ([]string, error) {
-	var err error
+func (sde *SimpleDiceExpression) parse() error {
 	sde.expressionText = strings.TrimSpace(sde.expressionText)
-	// Check if it's a constant dice expression
-	if constantRegexp.MatchString(sde.expressionText) == true {
-		sde.constant, err = strconv.Atoi(sde.expressionText)
+	_, tokensChannel := lex(sde.expressionText)
+	for tok := range tokensChannel {
+		switch tok.typ {
+		case tokenError:
+			return errors.New(tok.val)
+		case tokenNumber:
+			nextToken := <-tokensChannel
+			/// If it's the first number numDices must be 0
+			if sde.numDices == 0 {
+				sde.handleInitialTokenNumber(tok, nextToken)
+			} else {
+				sde.handleTokenNumber(tok, nextToken)
+				if nextToken.typ == tokenModifier {
+					sde.handleTokenModifier(nextToken, <-tokensChannel)
+				}
+			}
+		case tokenDice:
+			// Only found when then number was ommited so it's one dice
+			sde.numDices = 1
+		}
+	}
+	return nil
+	/*
+		var err error
+		// Check if it's a constant dice expression
+		if constantRegexp.MatchString(sde.expressionText) == true {
+			sde.constant, err = strconv.Atoi(sde.expressionText)
+			if err != nil {
+				return nil, err
+			}
+			return []string{sde.expressionText, "", ""}, nil
+		}
+		dices := baseRegEx.FindStringSubmatch(strings.TrimSpace(sde.expressionText))
+		if dices == nil {
+			return nil, errors.New("Invalid dice expression")
+		}
+		// If it's not specified assume it's one dice
+		sde.numDices = 1
+		if dices[numDicesPosition] != "" {
+			sde.numDices, err = strconv.Atoi(dices[numDicesPosition])
+			if err != nil {
+				return nil, err
+			}
+		}
+		sde.sides, err = strconv.Atoi(dices[numSidesPosition])
 		if err != nil {
 			return nil, err
 		}
-		return []string{sde.expressionText, "", ""}, nil
-	}
-	dices := baseRegEx.FindStringSubmatch(strings.TrimSpace(sde.expressionText))
-	if dices == nil {
-		return nil, errors.New("Invalid dice expression")
-	}
-	// If it's not specified assume it's one dice
-	sde.numDices = 1
-	if dices[numDicesPosition] != "" {
-		sde.numDices, err = strconv.Atoi(dices[numDicesPosition])
-		if err != nil {
-			return nil, err
+		if dices[modifierExpression] != "" {
+			modifiers, err := sde.parseModifiers(dices[modifierExpression])
+			if err != nil {
+				return nil, err
+			}
+			dices = append(dices[:len(dices)-1], modifiers[1:]...)
 		}
-	}
-	sde.sides, err = strconv.Atoi(dices[numSidesPosition])
-	if err != nil {
-		return nil, err
-	}
-	if dices[modifierExpression] != "" {
-		modifiers, err := sde.parseModifiers(dices[modifierExpression])
-		if err != nil {
-			return nil, err
-		}
-		dices = append(dices[:len(dices)-1], modifiers[1:]...)
-	}
-	return dices, nil
+		return dices, nil
+	*/
 }
 
 /**

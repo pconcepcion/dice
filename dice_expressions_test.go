@@ -2,73 +2,76 @@
 package rpg
 
 import (
-	"fmt"
 	"testing"
 )
 
 // Test that Parse splits the dices properly
 func TestParse(t *testing.T) {
 	var parseTestStrings = []struct {
-		s     string
-		out   []string
-		dices int
-		sides int
+		s   string
+		out SimpleDiceExpression
 	}{
 		// TODO: test with spaces and invalid dice expressions
 		// Constants
-		{"1", []string{"", ""}, 0, 0},
-		{"10", []string{"", ""}, 0, 0},
-		{"100", []string{"", ""}, 0, 0},
-		{"1000", []string{"", ""}, 0, 0},
-		{"4321", []string{"", ""}, 0, 0},
-		{" 1000", []string{"", ""}, 0, 0},
-		{"1000 ", []string{"", ""}, 0, 0},
-		{"10 00", []string{"", ""}, 0, 0},
-		{" 1000 ", []string{"", ""}, 0, 0},
+		{"1", SimpleDiceExpression{expressionText: "1", constant: 1}},
+		{"10", SimpleDiceExpression{expressionText: "10", constant: 10}},
+		{"100", SimpleDiceExpression{expressionText: "100", constant: 100}},
+		{"1000", SimpleDiceExpression{expressionText: "1000", constant: 1000}},
+		{"4321", SimpleDiceExpression{expressionText: "4321", constant: 4321}},
+		{" 1000", SimpleDiceExpression{expressionText: "1000", constant: 1000}},
+		{"1000 ", SimpleDiceExpression{expressionText: "1000", constant: 1000}},
 		// Basic dices
-		{"d2", []string{"", "2"}, 1, 2},
-		{"d4", []string{"", "4"}, 1, 4},
-		{"d6", []string{"", "6"}, 1, 6},
-		{"d8", []string{"", "8"}, 1, 8},
-		{"d10", []string{"", "10"}, 1, 10},
-		{"d12", []string{"", "12"}, 1, 12},
-		{"d20", []string{"", "20"}, 1, 20},
-		{"d100", []string{"", "100"}, 1, 100},
-		{"d200", []string{"", "200"}, 1, 200},
-		{"d1000", []string{"", "1000"}, 1, 1000},
+		{"d2", SimpleDiceExpression{numDices: 1, expressionText: "d2", sides: 2}},
+		{"d4", SimpleDiceExpression{numDices: 1, expressionText: "d4", sides: 4}},
+		{"d6", SimpleDiceExpression{numDices: 1, expressionText: "d6", sides: 6}},
+		{"d8", SimpleDiceExpression{numDices: 1, expressionText: "d8", sides: 8}},
+		{"d10", SimpleDiceExpression{numDices: 1, expressionText: "d10", sides: 10}},
+		{"d12", SimpleDiceExpression{numDices: 1, expressionText: "d12", sides: 12}},
+		{"d20", SimpleDiceExpression{numDices: 1, expressionText: "d20", sides: 20}},
+		{"d100", SimpleDiceExpression{numDices: 1, expressionText: "d100", sides: 100}},
+		{"d200", SimpleDiceExpression{numDices: 1, expressionText: "d200", sides: 200}},
+		{"d1000", SimpleDiceExpression{numDices: 1, expressionText: "d1000", sides: 1000}},
 		// More complex expressions
-		{"3d3", []string{"3", "3"}, 3, 3},
-		//{"3d3d3", []string{"3", "3", "d3"}, 3, 3},
-		//{"3d4d5", []string{"3", "4", "d5"}, 3, 4},
-		//{"3d4d5+2", []string{"3", "4", "d5+2"}, 3, 4},
-		{"1d2", []string{"1", "2"}, 1, 2}, // rolls one two sides die and calculates the sum
-		//{"2d6d1", []string{"2", "6", "d1"}, 2, 6},   // rolls two six-sided dice, drops the lowest roll, and sums the total
-		{"3d6k3", []string{"3", "6", "k3"}, 3, 6},   // rolls thee six-sided dice, keeps the highest 3 rolls, and presents the total
-		{"4d8r2", []string{"4", "8", "r2"}, 4, 8},   // rolls four eight-sided dice, repeatedly rerolls any dice that are lower than 2 until all dice rolls are higher than or equal to 2, and then sums and presents the total
-		{"5d6s4", []string{"5", "6", "s4"}, 5, 6},   // rolls five six-sided dice, and counts any individual roll that exceeds four, presenting the number of "successes"
-		{"6d6e", []string{"6", "6", "e"}, 6, 6},     // rolls eight six-sided dice, and if either rolls a 6, it is rerolled and added to the total (this continues until neither die rolls a 6).
-		{"7d6es8", []string{"7", "6", "es8"}, 7, 6}, // will roll seven six-sided dice, explode any that roll their maximum, and then total the rolls that exceed 8
-		{"8d6o", []string{"8", "6", "o"}, 8, 6},     // rolls 5 six-sided dice, and explodes any that roll 6
+		{"3d3", SimpleDiceExpression{numDices: 3, expressionText: "3d3", sides: 3}},
+		{"3d6", SimpleDiceExpression{numDices: 3, expressionText: "3d6", sides: 6}},
+		{"1d2", SimpleDiceExpression{numDices: 1, expressionText: "1d2", sides: 2}},
+		{"3d6k2", SimpleDiceExpression{numDices: 3, expressionText: "3d6k2", sides: 6, keep: 2}},
+		{"4d8r2", SimpleDiceExpression{numDices: 4, expressionText: "4d8r2", sides: 8, rerollH: 2}},
+		{"6d6e", SimpleDiceExpression{numDices: 6, expressionText: "6d6e", sides: 6, explodeResult: 6}},
+		{"7d6es8", SimpleDiceExpression{numDices: 7, expressionText: "7d6es8", sides: 6, explodeResult: 6, target: 8}},
+		{"8d6o", SimpleDiceExpression{numDices: 8, expressionText: "8d6o", sides: 6, explodeResult: 6}},
+		{"10d10o", SimpleDiceExpression{numDices: 10, expressionText: "10d10o", sides: 10, explodeResult: 10}},
+		// More complex expressions (omiting the number of dices -> 1 dice)
+		{"d6o", SimpleDiceExpression{numDices: 1, expressionText: "d6o", sides: 6, explodeResult: 6}},
+		{"d6e", SimpleDiceExpression{numDices: 1, expressionText: "d6e", sides: 6, explodeResult: 6}},
+		{"d6es4", SimpleDiceExpression{numDices: 1, expressionText: "d6es4", sides: 6, explodeResult: 6, target: 4}},
+		{"d100es96", SimpleDiceExpression{numDices: 1, expressionText: "d100es96", sides: 100, explodeResult: 100, target: 96}},
+		{"d100k1", SimpleDiceExpression{numDices: 1, expressionText: "d100k1", sides: 100, keep: 1}},
+		/*{"d6o", []Token{{tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "o"}, {tokenEOF, ""}}},
+		{"d6e", []Token{{tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "e"}, {tokenEOF, ""}}},
+		{"d6es4", []Token{{tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "es"}, {tokenNumber, "4"}, {tokenEOF, ""}}},
+		{"d100es96", []Token{{tokenDice, "d"}, {tokenNumber, "100"}, {tokenModifier, "es"}, {tokenNumber, "96"}, {tokenEOF, ""}}},
+		{"d100k1", []Token{{tokenDice, "d"}, {tokenNumber, "100"}, {tokenModifier, "k"}, {tokenNumber, "1"}, {tokenEOF, ""}}},
+
+			{"10 00", []string{"", ""}, 0, 0},
+			// More complex expressions
+			//{"3d3d3", []string{"3", "3", "d3"}, 3, 3},
+			//{"3d4d5", []string{"3", "4", "d5"}, 3, 4},
+			//{"3d4d5+2", []string{"3", "4", "d5+2"}, 3, 4},
+			//{"2d6d1", []string{"2", "6", "d1"}, 2, 6},   // rolls two six-sided dice, drops the lowest roll, and sums the total
+			{"5d6s4", []string{"5", "6", "s4"}, 5, 6},   // rolls five six-sided dice, and counts any individual roll that exceeds four, presenting the number of "targetes"
+		*/
 	}
 
-	var sde SimpleDiceExpression
 	for i, pts := range parseTestStrings {
-		sde.expressionText = pts.s
-		res, err := sde.parse()
+		sde := SimpleDiceExpression{expressionText: pts.s}
+		err := sde.parse()
 		//fmt.Printf("sde: %+v", sde)
 		if err != nil {
 			t.Errorf("%d) Failed to parse %s: %v", i, sde.expressionText, err)
-		} else {
-			for j, v := range pts.out {
-				if v != res[j+1] {
-					t.Errorf("%d) Failed to parse %s: %s != %s", i, sde.expressionText, v, res[j+1])
-				}
-			}
-			if sde.sides != pts.sides {
-				t.Errorf("%d) Failed to parse %s: sides doesn't match %d != %d", i, sde.expressionText, sde.sides, pts.sides)
-			}
-			//t.Logf("Parsed %s\n", sde.expressionText)
-			fmt.Printf("%d) Parsed %s -> %#v\n", i, sde.expressionText, res)
+		}
+		if sde != pts.out {
+			t.Errorf("%d) Failed to parse %s: %#v != %#v", i, pts.s, &sde, &pts.out)
 		}
 	}
 }
