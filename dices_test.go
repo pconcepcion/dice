@@ -16,6 +16,7 @@ func Test(d *Dice) Roll() int {
 */
 
 const ACCEPTABLE_ERROR = 0.1
+const num_iterations = 20 * 1000 * 1000
 
 // Test that D2() returns a random integer between 1 and 2
 func TestD2(t *testing.T) {
@@ -116,165 +117,165 @@ func TestD1000(t *testing.T) {
 	}
 }
 
-// Test that average of 1000000  D6() is arround 3.5
-func Test1000000D2(t *testing.T) {
+// Test that average of num_iterations D2() is arround 1.5
+func TestAverageD2(t *testing.T) {
 	var sum int
 	sum = 0
-	for i := 0; i < 1000000; i++ {
+	for i := 0; i < num_iterations; i++ {
 		sum += D2()
 	}
 	var average float64
-	average = float64(sum) / 1000000.0
+	average = float64(sum) / num_iterations
 	fmt.Println("Average D2: ", average)
 	if math.Abs(average-1.5) > ACCEPTABLE_ERROR {
 		t.Error("Expected value between 1.4 and 1.6", average)
 	}
 }
 
-// Test that average of 1000000  D4() is arround 3.5
-func Test1000000D4(t *testing.T) {
+// Test that average of num_iterations D4() is arround 2.5
+func TestAverageD4(t *testing.T) {
 	var sum int
 	sum = 0
-	for i := 0; i < 1000000; i++ {
+	for i := 0; i < num_iterations; i++ {
 		sum += D4()
 	}
 	var average float64
-	average = float64(sum) / 1000000.0
+	average = float64(sum) / num_iterations
 	fmt.Println("Average D4: ", average)
 	if math.Abs(average-2.5) > ACCEPTABLE_ERROR {
 		t.Error("Expected value between 2.4 and 2.6", average)
 	}
 }
 
-// Test that average of 1000000  D6() is arround 3.5
-func Test1000000D6(t *testing.T) {
+// Test that average of num_iterations D6() is arround 3.5
+func TestAverageD6(t *testing.T) {
 	var sum int
 	sum = 0
-	for i := 0; i < 1000000; i++ {
+	for i := 0; i < num_iterations; i++ {
 		sum += D6()
 	}
 	var average float64
-	average = float64(sum) / 1000000.0
+	average = float64(sum) / num_iterations
 	fmt.Println("Average D6: ", average)
 	if math.Abs(average-3.5) > ACCEPTABLE_ERROR {
 		t.Error("Expected value between 3.4 and 3.6", average)
 	}
 }
 
-// Test that average of 1000000  D8() is arround 3.5
-func Test1000000D8(t *testing.T) {
+// Test that average of num_iterations D8() is arround 4.5
+func TestAverageD8(t *testing.T) {
 	var sum int
 	sum = 0
-	for i := 0; i < 1000000; i++ {
+	for i := 0; i < num_iterations; i++ {
 		sum += D8()
 	}
 	var average float64
-	average = float64(sum) / 1000000.0
+	average = float64(sum) / num_iterations
 	fmt.Println("Average D8: ", average)
 	if math.Abs(average-4.5) > ACCEPTABLE_ERROR {
 		t.Error("Expected value between 4.4 and 4.6", average)
 	}
 }
 
-// Test that average of 1000000  D10() is arround 3.5
-func Test1000000D10(t *testing.T) {
+// Test that average of num_iterations D10() is arround 5.5
+func TestAverageD10(t *testing.T) {
 	var sum int
 	sum = 0
-	for i := 0; i < 1000000; i++ {
+	for i := 0; i < num_iterations; i++ {
 		sum += D10()
 	}
 	var average float64
-	average = float64(sum) / 1000000.0
+	average = float64(sum) / num_iterations
 	fmt.Println("Average D10: ", average)
 	if math.Abs(average-5.5) > ACCEPTABLE_ERROR {
 		t.Error("Expected value between 5.4 and 5.6", average)
 	}
 }
 
-// Test that average of 1000000  D12() is arround 3.5
-func Test1000000D12(t *testing.T) {
+// Test that average of num_iterations D12() is arround 6.5
+func TestAverageD12(t *testing.T) {
 	var sum int
 	sum = 0
-	for i := 0; i < 1000000; i++ {
+	for i := 0; i < num_iterations; i++ {
 		sum += D12()
 	}
 	var average float64
-	average = float64(sum) / 1000000.0
+	average = float64(sum) / num_iterations
 	fmt.Println("Average D12: ", average)
 	if math.Abs(average-6.5) > ACCEPTABLE_ERROR {
 		t.Error("Expected value between 6.4 and 6.6", average)
 	}
 }
 
-// Test that average of 1000000  D20() is arround 3.5
-func Test1000000D20(t *testing.T) {
+// Test that average of num_iterations D20() is arround 10.5
+func TestAverageD20(t *testing.T) {
 	var sum int
 	sum = 0
-	for i := 0; i < 1000000; i++ {
+	for i := 0; i < num_iterations; i++ {
 		sum += D20()
 	}
 	var average float64
-	average = float64(sum) / 1000000.0
+	average = float64(sum) / num_iterations
 	fmt.Println("Average D20: ", average)
 	if math.Abs(average-10.5) > ACCEPTABLE_ERROR {
 		t.Error("Expected value between 10.4 and 10.6", average)
 	}
 }
 
-// Test that average of 1000000  D30() is arround 3.5
-func Test1000000D30(t *testing.T) {
+// Test that average of num_iterations D30() is arround 15.5
+func TestAverageD30(t *testing.T) {
 	var sum int
 	sum = 0
-	for i := 0; i < 1000000; i++ {
+	for i := 0; i < num_iterations; i++ {
 		sum += D30()
 	}
 	var average float64
-	average = float64(sum) / 1000000.0
+	average = float64(sum) / num_iterations
 	fmt.Println("Average D30: ", average)
 	if math.Abs(average-15.5) > ACCEPTABLE_ERROR {
 		t.Error("Expected value between 15.4 and 15.6", average)
 	}
 }
 
-// Test that average of 1000000  D100() is arround 3.5
-func Test1000000D100(t *testing.T) {
+// Test that average of num_iterations D100() is arround 50.5
+func TestAverageD100(t *testing.T) {
 	var sum int
 	sum = 0
-	for i := 0; i < 1000000; i++ {
+	for i := 0; i < num_iterations; i++ {
 		sum += D100()
 	}
 	var average float64
-	average = float64(sum) / 1000000.0
+	average = float64(sum) / num_iterations
 	fmt.Println("Average D100: ", average)
 	if math.Abs(average-50.5) > ACCEPTABLE_ERROR {
 		t.Error("Expected value between 50.4 and 50.6", average)
 	}
 }
 
-// Test that average of 1000000  D200() is arround 3.5
-func Test1000000D200(t *testing.T) {
+// Test that average of num_iterations for D200() is arround 100.5
+func TestAverageD200(t *testing.T) {
 	var sum int
 	sum = 0
-	for i := 0; i < 1000000; i++ {
+	for i := 0; i < num_iterations; i++ {
 		sum += D200()
 	}
 	var average float64
-	average = float64(sum) / 1000000.0
+	average = float64(sum) / num_iterations
 	fmt.Println("Average D200: ", average)
 	if math.Abs(average-100.5) > ACCEPTABLE_ERROR {
 		t.Error("Expected value between 100.4 and 100.6", average)
 	}
 }
 
-// Test that average of 10000000  D1000() is arround 3.5
-func Test10000000D1000(t *testing.T) {
+// Test that average of Average for num_iterations D1000() is arround 500.5
+func TestAverageD1000(t *testing.T) {
 	var sum int
 	sum = 0
-	for i := 0; i < 10000000; i++ {
+	for i := 0; i < num_iterations; i++ {
 		sum += D1000()
 	}
 	var average float64
-	average = float64(sum) / 10000000.0
+	average = float64(sum) / num_iterations
 	fmt.Println("Average D1000: ", average)
 	if math.Abs(average-500.5) > ACCEPTABLE_ERROR {
 		t.Error("Expected value between 500.4 and 500.6", average)
@@ -292,11 +293,11 @@ func TestRandomDice(t *testing.T) {
 
 	// Test it
 	var sum int
-	for i := 0; i < 10000000; i++ {
+	for i := 0; i < num_iterations; i++ {
 		sum += d.Roll()
 	}
 	var average float64
-	average = float64(sum) / 10000000.0
+	average = float64(sum) / num_iterations
 	fmt.Printf("Average D%d: %g\n", sides, average)
 	if math.Abs(average-expectedAverage) > ACCEPTABLE_ERROR {
 		t.Error("Expected value for D", sides, " was around ", expectedAverage, " with an ", ACCEPTABLE_ERROR, " error")
