@@ -67,11 +67,11 @@ func TestLexer(t *testing.T) {
 		{"d100k1", []Token{{tokenDice, "d"}, {tokenNumber, "100"}, {tokenModifier, "k"}, {tokenNumber, "1"}, {tokenEOF, ""}}},
 
 		// Some errors:
-		{" 10000", []Token{{tokenError, " 1"}}},
-		{"1000 ", []Token{{tokenNumber, "1000"}, {tokenError, " "}}},
-		{"10 000", []Token{{tokenNumber, "10"}, {tokenError, " "}}},
-		{"d6a", []Token{{tokenDice, "d"}, {tokenNumber, "6"}, {tokenError, "a"}}},
-		{"5d6v4", []Token{{tokenNumber, "5"}, {tokenDice, "d"}, {tokenNumber, "6"}, {tokenError, "v"}}},
+		{" 10000", []Token{{tokenError, "unexpected token 49, expected either 'd' or number"}}},
+		{"1000 ", []Token{{tokenNumber, "1000"}, {tokenError, "unexpected token after num"}}},
+		{"10 000", []Token{{tokenNumber, "10"}, {tokenError, "unexpected token after num"}}},
+		{"d6a", []Token{{tokenDice, "d"}, {tokenNumber, "6"}, {tokenError, "unexpected token after num"}}},
+		{"5d6v4", []Token{{tokenNumber, "5"}, {tokenDice, "d"}, {tokenNumber, "6"}, {tokenError, "unexpected token after num"}}},
 		// TODO: more test with spaces and invalid dice expressions
 		/*
 			// More complex expressions
@@ -90,7 +90,7 @@ func TestLexer(t *testing.T) {
 			t.Error("Expected value: ", lts.out, " obtaned: ", resultTokens)
 			fmt.Printf("Lexer Test %d KO. Expected value: %v obtained  %v\n", i, lts.out, resultTokens)
 		} else {
-			fmt.Printf("Lexer Test %d OK: %v\n", i, resultTokens)
+			fmt.Printf("Lexer Test %d OK: %s\n", i, resultTokens)
 		}
 		resultTokens = []Token{}
 	}

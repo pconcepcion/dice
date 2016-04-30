@@ -7,7 +7,6 @@ package rpg
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -16,9 +15,13 @@ import (
 // Token type identifier
 type tokenType int
 
+// Generate the stringer for the tockentype
+//go:generate stringer -type=tokenType
+
 // Definition of token types
 const (
-	tokenError tokenType = iota
+	tokenUknown tokenType = iota
+	tokenError
 	tokenEOF
 	// tokenSpace
 	tokenNumber
@@ -98,11 +101,15 @@ func (l *lexer) emit(t tokenType) {
 	l.start = l.pos
 }
 
-func (l lexer) emitErrorf(format string, args ...interface{}) {
-	// fmt.Fprintf(os.Stderr, "Lexer error: %v\n", l)
-	fmt.Fprintf(os.Stderr, format, args)
-	//e := Token{tokenError, fmt.Sprintf(format, args)}
-	l.emit(tokenError)
+// error emits token and terminates the scan
+// by returing a nil pointer that will be the next
+// state, terminating l.run.
+func (l *lexer) errorf(format string, args ...interface{}) stateFn {
+	l.tokens <- Token{
+		tokenError,
+		fmt.Sprintf(format, args...),
+	}
+	return nil
 }
 
 /// next returns the next rune in the input or eof
@@ -160,18 +167,15 @@ func (l *lexer) acceptRun(valid string) {
 func startState(l *lexer) stateFn {
 	switch r := l.next(); {
 	case unicode.IsNumber(r):
-		return numberState // numDicesState
+		return numberState
 	case r == eof:
-		//return l.emitErrorf("empty action")
 		l.emit(tokenEOF)
 		return nil // finish the lexer
 	case r == 'd':
 		l.emit(tokenDice)
 		return numberState
-		//return diceState
 	}
-	l.emitErrorf("unexpected token %v, expected either 'd' or number\n", l.next())
-	return nil
+	return l.errorf("unexpected token %v, expected either 'd' or number", l.next())
 }
 
 // numberState gets the nuber of dices and emits the token the next state should be diceState
@@ -188,9 +192,6 @@ func numberState(l *lexer) stateFn {
 	case r == 'd':
 		l.emit(tokenDice)
 		return numberState
-		/*l.backup()
-		return diceState
-		*/
 	case strings.IndexRune("keors", r) != -1:
 		l.backup()
 		return modifierState
@@ -198,8 +199,7 @@ func numberState(l *lexer) stateFn {
 		l.emit(tokenEOF)
 		return nil // finish the lexer
 	}
-	l.emitErrorf("unexpected token after num\n")
-	return nil
+	return l.errorf("unexpected token after num")
 }
 
 // modifierState extracts one of the valid modifiers:
@@ -229,20 +229,9 @@ func modifierState(l *lexer) stateFn {
 		l.emit(tokenModifier)
 		return numberState
 	}
-	l.emitErrorf("unexpected modifier token\n")
-	return nil
+	return l.errorf("unexpected modifier token")
 }
 
-// diceState accepts the "d" marking the dice token and emits the token, shuld be numberState
-/*func diceState(l *lexer) stateFn {
-	if l.accept("d") {
-		l.emit(tokenDice)
-		return numberState
-	}
-	l.emitErrorf("expected dice token, got %s\n", l.peek())
-	return nil
-}
-*/
 // Character classes
 
 // isWhitespace returns true when theceived rune is a whitespace
