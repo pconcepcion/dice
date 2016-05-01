@@ -39,6 +39,10 @@ const (
 // eof represnets the end of file
 var eof = rune(0)
 
+// digits represent the valid digits
+const digits = "0123456789"
+const nonZeroDigits = "123456789"
+
 // Token represents a token of the lexer, and has a type and a value (a string)
 type Token struct {
 	typ tokenType
@@ -167,6 +171,7 @@ func (l *lexer) acceptRun(valid string) {
 func startState(l *lexer) stateFn {
 	switch r := l.next(); {
 	case unicode.IsNumber(r):
+		l.backup()
 		return numberState
 	case r == eof:
 		l.emit(tokenEOF)
@@ -180,11 +185,9 @@ func startState(l *lexer) stateFn {
 
 // numberState gets the nuber of dices and emits the token the next state should be diceState
 func numberState(l *lexer) stateFn {
-	digits := "0123456789"
-	// If starts with 0 must be a 0 and and the next can't be a number
-	/*if l.accept("0") && (strings.IndexRune(digits, l.peek()) != -1) {
-		return l.errorf("invalid sequence 0%s\n", l.peek())
-	}*/
+	if !l.accept(nonZeroDigits) {
+		return l.errorf("expecting non zero digit, got %q", l.next())
+	}
 	l.acceptRun(digits)
 	l.emit(tokenNumber)
 
@@ -202,6 +205,18 @@ func numberState(l *lexer) stateFn {
 	return l.errorf("unexpected token after num")
 }
 
+// modifierExplodingState handles the e and es tokens
+func modifierExplodingState(l *lexer) stateFn {
+	if l.accept("s") {
+		// es
+		l.emit(tokenModifier)
+		return numberState
+	}
+	// e
+	l.emit(tokenModifier)
+	return startState
+}
+
 // modifierState extracts one of the valid modifiers:
 // * k = Keep
 // * e = Explode
@@ -211,14 +226,7 @@ func numberState(l *lexer) stateFn {
 // * r = Reroll
 func modifierState(l *lexer) stateFn {
 	if l.accept("e") {
-		if l.accept("s") {
-			// es
-			l.emit(tokenModifier)
-			return numberState
-		}
-		// e
-		l.emit(tokenModifier)
-		return startState
+		return modifierExplodingState
 	}
 	if l.accept("o") {
 		l.emit(tokenModifier)

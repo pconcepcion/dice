@@ -65,13 +65,17 @@ func TestLexer(t *testing.T) {
 		{"d6es4", []Token{{tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "es"}, {tokenNumber, "4"}, {tokenEOF, ""}}},
 		{"d100es96", []Token{{tokenDice, "d"}, {tokenNumber, "100"}, {tokenModifier, "es"}, {tokenNumber, "96"}, {tokenEOF, ""}}},
 		{"d100k1", []Token{{tokenDice, "d"}, {tokenNumber, "100"}, {tokenModifier, "k"}, {tokenNumber, "1"}, {tokenEOF, ""}}},
+		{"100d100k90", []Token{{tokenNumber, "100"}, {tokenDice, "d"}, {tokenNumber, "100"}, {tokenModifier, "k"}, {tokenNumber, "90"}, {tokenEOF, ""}}},
 
 		// Some errors:
 		{" 10000", []Token{{tokenError, "unexpected token 49, expected either 'd' or number"}}},
 		{"1000 ", []Token{{tokenNumber, "1000"}, {tokenError, "unexpected token after num"}}},
 		{"10 000", []Token{{tokenNumber, "10"}, {tokenError, "unexpected token after num"}}},
+		{"01000", []Token{{tokenError, "expecting non zero digit, got '0'"}}},
 		{"d6a", []Token{{tokenDice, "d"}, {tokenNumber, "6"}, {tokenError, "unexpected token after num"}}},
+		{"0d6", []Token{{tokenError, "expecting non zero digit, got '0'"}}},
 		{"5d6v4", []Token{{tokenNumber, "5"}, {tokenDice, "d"}, {tokenNumber, "6"}, {tokenError, "unexpected token after num"}}},
+		{"5d6k4d", []Token{{tokenNumber, "5"}, {tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "k"}, {tokenNumber, "4"}, {tokenDice, "d"}, {tokenError, "expecting non zero digit, got '\\x00'"}}},
 		// TODO: more test with spaces and invalid dice expressions
 		/*
 			// More complex expressions
