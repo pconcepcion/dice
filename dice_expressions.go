@@ -3,7 +3,9 @@ package rpg
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -30,6 +32,10 @@ type SimpleDiceExpression struct {
 	open           int    // count as success if greater than X
 	reroll         int    // number of high results to reroll
 	constant       int    // constant value
+}
+
+type Roller interface {
+	Roll() DiceExpressionResult
 }
 
 var baseRegEx *regexp.Regexp
@@ -122,4 +128,31 @@ func (sde *SimpleDiceExpression) parse() error {
 		}
 	}
 	return nil
+}
+
+//Roll the expression and return the reslut or an error
+func (sde *SimpleDiceExpression) Roll() (DiceExpressionResult, error) {
+	if err := sde.parse(); err != nil {
+		return nil, err
+	}
+	result := &simpleDiceExpressionResult{diceExpression: *sde, diceResults: make([]int, sde.numDices)}
+	d := NewDice(sde.sides)
+	for i := 0; i < sde.numDices; i++ {
+		result.diceResults[i] = d.Roll()
+	}
+	fmt.Println("result.diceExpression: ", result.diceExpression)
+	fmt.Println("result.diceResults: ", result.diceResults)
+	sort.Sort(result.diceResults)
+	fmt.Println("sorted result.diceResults: ", result.diceResults)
+	if sde.keep > 0 {
+		result.diceResults = result.diceResults[:sde.keep]
+	}
+	fmt.Println("kept result.diceResults: ", result.diceResults)
+	result.total = sde.constant
+	for j := 0; j < len(result.diceResults); j++ {
+		result.total = result.diceResults[j]
+	}
+	fmt.Println("total: ", result.total)
+
+	return result, nil
 }
