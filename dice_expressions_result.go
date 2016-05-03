@@ -8,13 +8,13 @@ type DiceResults []int
 // Implement the Sort interfaace
 
 // Len gives the length of the Dice results
-func (a DiceResults) Len() int { return len(a) }
+func (dr DiceResults) Len() int { return len(dr) }
 
 // Swap swaps the positions of two elements from the Dice Results
-func (a DiceResults) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (dr DiceResults) Swap(i, j int) { dr[i], dr[j] = dr[j], dr[i] }
 
 // Less returns true if the ith element is less than the jth
-func (a DiceResults) Less(i, j int) bool { return a[i] < a[j] }
+func (dr DiceResults) Less(i, j int) bool { return dr[i] < dr[j] }
 
 // Sum sums the values in a DiceResults slice
 func (dr DiceResults) Sum() int {
@@ -70,6 +70,19 @@ func (sder *simpleDiceExpressionResult) explodeDice() DiceResults {
 		fmt.Println("append new result: ", newValue)
 	}
 	return results
+}
+
+// Open rolls all the dices and explodes them and sets the total as the maximum of the results
+// the new roll is still equal to the nubmer of sides
+func (sder *simpleDiceExpressionResult) Open() {
+	numSides := sder.diceExpression.sides
+	for i, res := range sder.diceResults {
+		if res == numSides {
+			results := sder.explodeDice()
+			sder.extraDiceResults = append(sder.extraDiceResults, results...)
+			sder.diceResults[i] = results.Sum() + res
+		}
+	}
 }
 
 // Explode rolls one extra dice for each reult that it's equal to the number of sides, and keeps doing it if the result of

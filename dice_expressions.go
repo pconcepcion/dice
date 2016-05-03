@@ -175,7 +175,11 @@ func (sde *SimpleDiceExpression) Roll() (DiceExpressionResult, error) {
 		fmt.Println("explode result.extrDiceResults: ", result.extraDiceResults)
 		result.SumTotal()
 	case open:
-		// TODO open
+		result.Open()
+		fmt.Println("explode result.diceResults: ", result.diceResults)
+		fmt.Println("explode result.extrDiceResults: ", result.extraDiceResults)
+		sort.Sort(sort.Reverse(result.diceResults))
+		result.total += result.diceResults[0]
 	case reroll:
 		result.Reroll(sde.modifierValue)
 		sort.Sort(sort.Reverse(result.diceResults))
