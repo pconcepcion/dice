@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+type diceModifier int
+
 const (
 	emptyExpression = iota
 	wholeExpression
@@ -18,20 +20,27 @@ const (
 	modifierExpression
 )
 
+//go:generate stringer -type=diceModifier
+const (
+	normal diceModifier = iota
+	keep
+	reroll
+	success
+	exlpodingSuccess
+	explode
+	open
+	drop
+)
+
 // SimpleDiceExpression represents a dice expression with just one type of dice
 // dice expresions are based on the ones in RPtools ( http://lmwcs.com/rptools/wiki/Dice_Expressions )
 type SimpleDiceExpression struct {
-	expressionText string // Text that represents the dice expression
-	numDices       int    // number of dices
-	sides          int    // dice sides
-	modifier       int    // modifier to the result
-	drop           int    // number of lower results to drop
-	keep           int    // number of lower results to keep
-	explodeResult  int    // explode the result if greater than X
-	target         int    // target to consider a success the value must be greater than X
-	open           int    // count as success if greater than X
-	reroll         int    // number of high results to reroll
-	constant       int    // constant value
+	expressionText string       // Text that represents the dice expression
+	numDices       int          // number of dices
+	sides          int          // dice sides
+	modifier       diceModifier // modifier to the result
+	modifierValue  int          // value related to the modifier
+	constant       int          // constant value
 }
 
 type Roller interface {
@@ -55,23 +64,28 @@ func (sde *SimpleDiceExpression) handleTokenModifier(tok, nextToken Token) {
 	case tokenNumber:
 		switch tok.val {
 		case "k":
-			sde.keep, _ = strconv.Atoi(nextToken.val)
+			sde.modifierValue, _ = strconv.Atoi(nextToken.val)
+			sde.modifier = keep
 		case "s":
-			sde.target, _ = strconv.Atoi(nextToken.val)
+			sde.modifierValue, _ = strconv.Atoi(nextToken.val)
+			sde.modifier = success
 		case "es":
-			sde.explodeResult = sde.sides
-			sde.target, _ = strconv.Atoi(nextToken.val)
+			sde.modifier = exlpodingSuccess
+			sde.modifierValue, _ = strconv.Atoi(nextToken.val)
 		case "r":
-			sde.reroll, _ = strconv.Atoi(nextToken.val)
+			sde.modifier = reroll
+			sde.modifierValue, _ = strconv.Atoi(nextToken.val)
 		default:
 			panic("Unexpected modifier")
 		}
 	case tokenEOF:
 		switch tok.val {
 		case "e":
-			sde.explodeResult = sde.sides
+			sde.modifier = explode
+			sde.modifierValue = sde.sides
 		case "o":
-			sde.open = sde.sides
+			sde.modifier = open
+			sde.modifierValue = sde.sides
 		}
 	}
 }
@@ -142,16 +156,38 @@ func (sde *SimpleDiceExpression) Roll() (DiceExpressionResult, error) {
 	}
 	fmt.Println("result.diceExpression: ", result.diceExpression)
 	fmt.Println("result.diceResults: ", result.diceResults)
-	sort.Sort(result.diceResults)
+	sort.Sort(sort.Reverse(result.diceResults))
 	fmt.Println("sorted result.diceResults: ", result.diceResults)
-	if sde.keep > 0 {
-		result.diceResults = result.diceResults[:sde.keep]
+	switch sde.modifier {
+	case keep:
+		result.diceResults = result.diceResults[:sde.modifierValue]
+		fmt.Println("kept result.diceResults: ", result.diceResults)
+		result.SumTotal()
+	case success:
+		result.Success(sde.modifierValue)
+	case exlpodingSuccess:
+		result.ExplodingSuccess(sde.modifierValue)
+		fmt.Println("explode result.diceResults: ", result.diceResults)
+		fmt.Println("explode result.extrDiceResults: ", result.extraDiceResults)
+	case explode:
+		result.Explode()
+		fmt.Println("explode result.diceResults: ", result.diceResults)
+		fmt.Println("explode result.extrDiceResults: ", result.extraDiceResults)
+		result.SumTotal()
+	case open:
+		// TODO open
+	case reroll:
+		result.Reroll(sde.modifierValue)
+		sort.Sort(sort.Reverse(result.diceResults))
+		fmt.Println("reroll result.diceResults: ", result.diceResults)
+	case drop:
+		result.diceResults = result.diceResults[:(sde.numDices - sde.modifierValue)]
+		fmt.Println("drop result.diceResults: ", result.diceResults)
+		result.SumTotal()
+	default:
+		result.SumTotal()
 	}
-	fmt.Println("kept result.diceResults: ", result.diceResults)
-	result.total = sde.constant
-	for j := 0; j < len(result.diceResults); j++ {
-		result.total = result.diceResults[j]
-	}
+	result.total += sde.constant
 	fmt.Println("total: ", result.total)
 
 	return result, nil
