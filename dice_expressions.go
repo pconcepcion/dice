@@ -4,7 +4,6 @@ package rpg
 import (
 	"errors"
 	"fmt"
-	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -45,17 +44,6 @@ type SimpleDiceExpression struct {
 
 type Roller interface {
 	Roll() DiceExpressionResult
-}
-
-var baseRegEx *regexp.Regexp
-var constantRegexp *regexp.Regexp
-var modifiersRegEx *regexp.Regexp
-
-// Compiles the regular expressions
-func init() {
-	baseRegEx = regexp.MustCompile(`(?P<numDices>\d*)d(?P<numSides>\d+)(?P<modifiers>.*)`)
-	constantRegexp = regexp.MustCompile(`^\d+$`)
-	modifiersRegEx = regexp.MustCompile(`(?P<modifier>[dekors])(?P<value>\d*)(?P<addSubstract>[+-]*)(?P<constant>\d*)`)
 }
 
 // handleTokenMoffier handles the Modifier possible extra number
