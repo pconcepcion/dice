@@ -214,6 +214,9 @@ func modifierExplodingState(l *lexer) stateFn {
 	}
 	// e
 	l.emit(tokenModifier)
+	if r := l.peek(); unicode.IsNumber(r) {
+		return numberState
+	}
 	return startState
 }
 
@@ -232,8 +235,14 @@ func modifierState(l *lexer) stateFn {
 		l.emit(tokenModifier)
 		return startState
 	}
-	// Keep, Rerroll and Success need a number afterwards
-	if l.accept("krs") {
+	// Keep and keep lower
+	if l.accept("k") {
+		l.accept("l")
+		l.emit(tokenModifier)
+		return numberState
+	}
+	// Rerroll and Success need a number afterwards
+	if l.accept("rs") {
 		l.emit(tokenModifier)
 		return numberState
 	}

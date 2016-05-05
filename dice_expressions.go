@@ -23,6 +23,7 @@ const (
 const (
 	normal diceModifier = iota
 	keep
+	keepLower
 	reroll
 	success
 	exlpodingSuccess
@@ -42,6 +43,7 @@ type SimpleDiceExpression struct {
 	constant       int          // constant value
 }
 
+// Roller interface represents anthiing that can be "rolled" and generate a DiceExpressionResult
 type Roller interface {
 	Roll() DiceExpressionResult
 }
@@ -54,6 +56,12 @@ func (sde *SimpleDiceExpression) handleTokenModifier(tok, nextToken Token) {
 		case "k":
 			sde.modifierValue, _ = strconv.Atoi(nextToken.val)
 			sde.modifier = keep
+		case "kl":
+			sde.modifierValue, _ = strconv.Atoi(nextToken.val)
+			sde.modifier = keepLower
+		case "e":
+			sde.modifierValue, _ = strconv.Atoi(nextToken.val)
+			sde.modifier = explode
 		case "s":
 			sde.modifierValue, _ = strconv.Atoi(nextToken.val)
 			sde.modifier = success
@@ -142,7 +150,7 @@ func (sde *SimpleDiceExpression) Roll() (DiceExpressionResult, error) {
 	for i := 0; i < sde.numDices; i++ {
 		result.diceResults[i] = d.Roll()
 	}
-	fmt.Println("result.diceExpression: ", result.diceExpression)
+	fmt.Printf("result.diceExpression: %+v", result.diceExpression)
 	fmt.Println("result.diceResults: ", result.diceResults)
 	sort.Sort(sort.Reverse(result.diceResults))
 	fmt.Println("sorted result.diceResults: ", result.diceResults)
@@ -150,6 +158,13 @@ func (sde *SimpleDiceExpression) Roll() (DiceExpressionResult, error) {
 	case keep:
 		result.diceResults = result.diceResults[:sde.modifierValue]
 		fmt.Println("kept result.diceResults: ", result.diceResults)
+		result.SumTotal()
+	case keepLower:
+		// TODO: solve this wihout so much sorting...
+		sort.Sort(result.diceResults)
+		result.diceResults = result.diceResults[:sde.modifierValue]
+		sort.Sort(sort.Reverse(result.diceResults))
+		fmt.Println("keptLower result.diceResults: ", result.diceResults)
 		result.SumTotal()
 	case success:
 		result.Success(sde.modifierValue)

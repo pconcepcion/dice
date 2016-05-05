@@ -59,12 +59,13 @@ func (sder *simpleDiceExpressionResult) SumTotal() {
 // explodeDice explodes the result of one dice rolling and adding a dice to the results while the result is the same than the number of sides
 func (sder *simpleDiceExpressionResult) explodeDice() DiceResults {
 	numSides := sder.diceExpression.sides
+	threshold := sder.diceExpression.modifierValue
 	d := NewDice(numSides)
 	results := make([]int, 0, 3)
 	newValue := d.Roll()
 	results = append(results, newValue)
 	fmt.Println("append 1st new result: ", newValue)
-	for newValue == numSides {
+	for newValue >= threshold {
 		newValue = d.Roll()
 		results = append(results, newValue)
 		fmt.Println("append new result: ", newValue)
@@ -88,9 +89,8 @@ func (sder *simpleDiceExpressionResult) Open() {
 // Explode rolls one extra dice for each reult that it's equal to the number of sides, and keeps doing it if the result of
 // the new roll is still equal to the nubmer of sides
 func (sder *simpleDiceExpressionResult) Explode() {
-	numSides := sder.diceExpression.sides
 	for _, res := range sder.diceResults {
-		if res == numSides {
+		if res >= sder.diceExpression.modifierValue {
 			results := sder.explodeDice()
 			sder.extraDiceResults = append(sder.extraDiceResults, results...)
 		}
