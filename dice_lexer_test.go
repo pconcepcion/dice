@@ -53,19 +53,23 @@ func TestLexer(t *testing.T) {
 		{"1d2", []Token{{tokenNumber, "1"}, {tokenDice, "d"}, {tokenNumber, "2"}, {tokenEOF, ""}}},
 		//{"2d2d1", []Token{Token{tokenNumber, "2"}, Token{tokenDice, "d"}, Token{tokenNumber, "2"}, Token{tokenModifier, "d",}, Token{tokenNumber, "1"},  Token{tokenEOF, ""}}},
 		{"3d6k2", []Token{{tokenNumber, "3"}, {tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "k"}, {tokenNumber, "2"}, {tokenEOF, ""}}},
+		{"3d6kl2", []Token{{tokenNumber, "3"}, {tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "kl"}, {tokenNumber, "2"}, {tokenEOF, ""}}},
 		{"4d8r2", []Token{{tokenNumber, "4"}, {tokenDice, "d"}, {tokenNumber, "8"}, {tokenModifier, "r"}, {tokenNumber, "2"}, {tokenEOF, ""}}},
 		{"5d6s4", []Token{{tokenNumber, "5"}, {tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "s"}, {tokenNumber, "4"}, {tokenEOF, ""}}},
 		{"6d6e", []Token{{tokenNumber, "6"}, {tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "e"}, {tokenEOF, ""}}},
+		{"6d6e4", []Token{{tokenNumber, "6"}, {tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "e"}, {tokenNumber, "4"}, {tokenEOF, ""}}},
 		{"7d6es8", []Token{{tokenNumber, "7"}, {tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "es"}, {tokenNumber, "8"}, {tokenEOF, ""}}},
 		{"8d6o", []Token{{tokenNumber, "8"}, {tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "o"}, {tokenEOF, ""}}},
 		{"10d10o", []Token{{tokenNumber, "10"}, {tokenDice, "d"}, {tokenNumber, "10"}, {tokenModifier, "o"}, {tokenEOF, ""}}},
 		// More complex expressions (omiting the number of dices -> 1 dice)
 		{"d6o", []Token{{tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "o"}, {tokenEOF, ""}}},
 		{"d6e", []Token{{tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "e"}, {tokenEOF, ""}}},
+		{"d6e4", []Token{{tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "e"}, {tokenNumber, "4"}, {tokenEOF, ""}}},
 		{"d6es4", []Token{{tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "es"}, {tokenNumber, "4"}, {tokenEOF, ""}}},
 		{"d100es96", []Token{{tokenDice, "d"}, {tokenNumber, "100"}, {tokenModifier, "es"}, {tokenNumber, "96"}, {tokenEOF, ""}}},
 		{"d100k1", []Token{{tokenDice, "d"}, {tokenNumber, "100"}, {tokenModifier, "k"}, {tokenNumber, "1"}, {tokenEOF, ""}}},
 		{"100d100k90", []Token{{tokenNumber, "100"}, {tokenDice, "d"}, {tokenNumber, "100"}, {tokenModifier, "k"}, {tokenNumber, "90"}, {tokenEOF, ""}}},
+		{"100d100e96", []Token{{tokenNumber, "100"}, {tokenDice, "d"}, {tokenNumber, "100"}, {tokenModifier, "e"}, {tokenNumber, "96"}, {tokenEOF, ""}}},
 
 		// Some errors:
 		{" 10000", []Token{{tokenError, "unexpected token 49, expected either 'd' or number"}}},
