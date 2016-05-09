@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/pconcepcion/dice.svg?branch=develop)](https://travis-ci.org/pconcepcion/dice)
+
 ## Introduction ##
 Dice roll generators written in Go
 
