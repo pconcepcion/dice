@@ -48,6 +48,8 @@ type Roller interface {
 	Roll() DiceExpressionResult
 }
 
+// TODO:handle strconv.Atoi errors
+
 // handleTokenMoffier handles the Modifier possible extra number
 func (sde *SimpleDiceExpression) handleTokenModifier(tok, nextToken Token) {
 	switch nextToken.typ {
@@ -115,6 +117,7 @@ func (sde *SimpleDiceExpression) handleInitialTokenNumber(tok, nextToken Token) 
  * Parse a simple dice expresion and save the relevant information on the struct
  */
 func (sde *SimpleDiceExpression) parse() error {
+	firstToken := true
 	sde.expressionText = strings.TrimSpace(sde.expressionText)
 	_, tokensChannel := lex(sde.expressionText)
 	for tok := range tokensChannel {
@@ -123,8 +126,8 @@ func (sde *SimpleDiceExpression) parse() error {
 			return errors.New(tok.val)
 		case tokenNumber:
 			nextToken := <-tokensChannel
-			/// If it's the first number numDices must be 0
-			if sde.numDices == 0 {
+			/// If it's the first
+			if firstToken {
 				sde.handleInitialTokenNumber(tok, nextToken)
 			} else {
 				sde.handleTokenNumber(tok, nextToken)
@@ -136,6 +139,7 @@ func (sde *SimpleDiceExpression) parse() error {
 			// Only found when then number was ommited so it's one dice
 			sde.numDices = 1
 		}
+		firstToken = false
 	}
 	return nil
 }
@@ -145,6 +149,10 @@ func (sde *SimpleDiceExpression) Roll() (DiceExpressionResult, error) {
 	if err := sde.parse(); err != nil {
 		return nil, err
 	}
+	if sde.numDices == 0 || sde.sides == 0 {
+		return &simpleDiceExpressionResult{diceExpression: *sde, total: 0}, nil
+	}
+
 	result := &simpleDiceExpressionResult{diceExpression: *sde, diceResults: make([]int, sde.numDices)}
 	d := NewDice(sde.sides)
 	for i := 0; i < sde.numDices; i++ {
