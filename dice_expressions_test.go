@@ -48,12 +48,15 @@ func TestParse(t *testing.T) {
 		{"d6es4", SimpleDiceExpression{numDices: 1, expressionText: "d6es4", sides: 6, modifier: exlpodingSuccess, modifierValue: 4}},
 		{"d100es96", SimpleDiceExpression{numDices: 1, expressionText: "d100es96", sides: 100, modifier: exlpodingSuccess, modifierValue: 96}},
 		{"d100k1", SimpleDiceExpression{numDices: 1, expressionText: "d100k1", sides: 100, modifier: keep, modifierValue: 1}},
-		/*{"d6o", []Token{{tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "o"}, {tokenEOF, ""}}},
-		{"d6e", []Token{{tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "e"}, {tokenEOF, ""}}},
-		{"d6es4", []Token{{tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "es"}, {tokenNumber, "4"}, {tokenEOF, ""}}},
-		{"d100es96", []Token{{tokenDice, "d"}, {tokenNumber, "100"}, {tokenModifier, "es"}, {tokenNumber, "96"}, {tokenEOF, ""}}},
-		{"d100k1", []Token{{tokenDice, "d"}, {tokenNumber, "100"}, {tokenModifier, "k"}, {tokenNumber, "1"}, {tokenEOF, ""}}},
+		// Expressions wiht 0
+		{"0", SimpleDiceExpression{expressionText: "0", constant: 0}},
+		{"d0", SimpleDiceExpression{numDices: 1, expressionText: "d0", sides: 0}},
+		{"0d6o", SimpleDiceExpression{numDices: 0, expressionText: "0d6o", sides: 6, modifier: open, modifierValue: 6}},
+		{"d0e", SimpleDiceExpression{numDices: 1, expressionText: "d0e", sides: 0, modifier: explode, modifierValue: 0}},
+		{"d0e0", SimpleDiceExpression{numDices: 1, expressionText: "d0e0", sides: 0, modifier: explode, modifierValue: 0}},
+		{"d6es0", SimpleDiceExpression{numDices: 1, expressionText: "d6es0", sides: 6, modifier: exlpodingSuccess, modifierValue: 0}},
 
+		/*
 			{"10 00", []string{"", ""}, 0, 0},
 			// More complex expressions
 			//{"3d3d3", []string{"3", "3", "d3"}, 3, 3},
@@ -63,7 +66,6 @@ func TestParse(t *testing.T) {
 			{"5d6s4", []string{"5", "6", "s4"}, 5, 6},   // rolls five six-sided dice, and counts any individual roll that exceeds four, presenting the number of "targetes"
 		*/
 	}
-
 	for i, pts := range parseTestStrings {
 		sde := SimpleDiceExpression{expressionText: pts.s}
 		err := sde.parse()
@@ -124,12 +126,15 @@ func TestRoll(t *testing.T) {
 		{"d100es96", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 1, expressionText: "d100es96", sides: 100, modifier: exlpodingSuccess, modifierValue: 96}}},
 		{"d100e96", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 1, expressionText: "d100e96", sides: 100, modifier: explode, modifierValue: 96}}},
 		{"d100k1", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 1, expressionText: "d100k1", sides: 100, modifier: keep, modifierValue: 1}}},
-		/*{"d6o", []Token{{tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "o"}, {tokenEOF, ""}}},
-		{"d6e", []Token{{tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "e"}, {tokenEOF, ""}}},
-		{"d6es4", []Token{{tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "es"}, {tokenNumber, "4"}, {tokenEOF, ""}}},
-		{"d100es96", []Token{{tokenDice, "d"}, {tokenNumber, "100"}, {tokenModifier, "es"}, {tokenNumber, "96"}, {tokenEOF, ""}}},
-		{"d100k1", []Token{{tokenDice, "d"}, {tokenNumber, "100"}, {tokenModifier, "k"}, {tokenNumber, "1"}, {tokenEOF, ""}}},
+		// Expressions wiht 0
+		{"0", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{expressionText: "0", constant: 0}}},
+		{"d0", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 1, expressionText: "d0", sides: 0}}},
+		{"0d6o", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 0, expressionText: "0d6o", sides: 6, modifier: open, modifierValue: 6}}},
+		{"d0e", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 1, expressionText: "d0e", sides: 0, modifier: explode, modifierValue: 0}}},
+		{"d0e0", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 1, expressionText: "d0e0", sides: 0, modifier: explode, modifierValue: 0}}},
+		{"d6es0", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 1, expressionText: "d6es0", sides: 6, modifier: exlpodingSuccess, modifierValue: 0}}},
 
+		/*
 			{"10 00", []string{"", ""}, 0, 0},
 			// More complex expressions
 			//{"3d3d3", []string{"3", "3", "d3"}, 3, 3},
@@ -139,7 +144,6 @@ func TestRoll(t *testing.T) {
 			{"5d6s4", []string{"5", "6", "s4"}, 5, 6},   // rolls five six-sided dice, and counts any individual roll that exceeds four, presenting the number of "targetes"
 		*/
 	}
-
 	for i, pts := range parseTestStrings {
 		sde := SimpleDiceExpression{expressionText: pts.s}
 		_, err := sde.Roll()
