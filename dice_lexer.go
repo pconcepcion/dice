@@ -177,24 +177,40 @@ func startState(l *lexer) stateFn {
 		l.emit(tokenEOF)
 		return nil // finish the lexer
 	case r == 'd':
-		l.emit(tokenDice)
-		return numberState
+		return diceState
 	}
 	return l.errorf("unexpected token %v, expected either 'd' or number", l.next())
 }
 
+// diceState emits a diceToken and verifies that the next token is a number
+func diceState(l *lexer) stateFn {
+	l.emit(tokenDice)
+	if !unicode.IsNumber(l.peek()) {
+		return l.errorf("expected number after dice token, got %q", l.next())
+	}
+	return numberState
+}
+
 // numberState gets the nuber of dices and emits the token the next state should be diceState
 func numberState(l *lexer) stateFn {
-	if !l.accept(nonZeroDigits) {
-		return l.errorf("expecting non zero digit, got %q", l.next())
-	}
-	l.acceptRun(digits)
-	l.emit(tokenNumber)
 
+	// 0 constant must be alone, not followed by any other digit
+	if l.accept("0") {
+		if unicode.IsNumber(l.peek()) {
+			return l.errorf("a number that starts with zero can't be followed by another digit, got %q", l.next())
+		}
+		l.emit(tokenNumber)
+	} else {
+		/*if !l.accept(nonZeroDigits) {
+			return l.errorf("expecting non zero digit, got %q", l.next())
+		}
+		*/
+		l.acceptRun(digits)
+		l.emit(tokenNumber)
+	}
 	switch r := l.next(); {
 	case r == 'd':
-		l.emit(tokenDice)
-		return numberState
+		return diceState
 	case strings.IndexRune("keors", r) != -1:
 		l.backup()
 		return modifierState

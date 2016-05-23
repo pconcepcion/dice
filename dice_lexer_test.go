@@ -70,16 +70,21 @@ func TestLexer(t *testing.T) {
 		{"d100k1", []Token{{tokenDice, "d"}, {tokenNumber, "100"}, {tokenModifier, "k"}, {tokenNumber, "1"}, {tokenEOF, ""}}},
 		{"100d100k90", []Token{{tokenNumber, "100"}, {tokenDice, "d"}, {tokenNumber, "100"}, {tokenModifier, "k"}, {tokenNumber, "90"}, {tokenEOF, ""}}},
 		{"100d100e96", []Token{{tokenNumber, "100"}, {tokenDice, "d"}, {tokenNumber, "100"}, {tokenModifier, "e"}, {tokenNumber, "96"}, {tokenEOF, ""}}},
+		// Expressions with 0
+		{"0", []Token{{tokenNumber, "0"}, {tokenEOF, ""}}},
+		{"d0", []Token{{tokenDice, "d"}, {tokenNumber, "0"}, {tokenEOF, ""}}},
+		{"0d3", []Token{{tokenNumber, "0"}, {tokenDice, "d"}, {tokenNumber, "3"}, {tokenEOF, ""}}},
+		{"3d0", []Token{{tokenNumber, "3"}, {tokenDice, "d"}, {tokenNumber, "0"}, {tokenEOF, ""}}},
+		{"3d6k0", []Token{{tokenNumber, "3"}, {tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "k"}, {tokenNumber, "0"}, {tokenEOF, ""}}},
 
 		// Some errors:
 		{" 10000", []Token{{tokenError, "unexpected token 49, expected either 'd' or number"}}},
 		{"1000 ", []Token{{tokenNumber, "1000"}, {tokenError, "unexpected token after num"}}},
 		{"10 000", []Token{{tokenNumber, "10"}, {tokenError, "unexpected token after num"}}},
-		{"01000", []Token{{tokenError, "expecting non zero digit, got '0'"}}},
+		{"01000", []Token{{tokenError, "a number that starts with zero can't be followed by another digit, got '1'"}}},
 		{"d6a", []Token{{tokenDice, "d"}, {tokenNumber, "6"}, {tokenError, "unexpected token after num"}}},
-		{"0d6", []Token{{tokenError, "expecting non zero digit, got '0'"}}},
 		{"5d6v4", []Token{{tokenNumber, "5"}, {tokenDice, "d"}, {tokenNumber, "6"}, {tokenError, "unexpected token after num"}}},
-		{"5d6k4d", []Token{{tokenNumber, "5"}, {tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "k"}, {tokenNumber, "4"}, {tokenDice, "d"}, {tokenError, "expecting non zero digit, got '\\x00'"}}},
+		{"5d6k4d", []Token{{tokenNumber, "5"}, {tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "k"}, {tokenNumber, "4"}, {tokenDice, "d"}, {tokenError, "expected number after dice token, got '\\x00'"}}},
 		// TODO: more test with spaces and invalid dice expressions
 		/*
 			// More complex expressions
