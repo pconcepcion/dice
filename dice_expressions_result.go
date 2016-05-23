@@ -67,6 +67,7 @@ func (sder *simpleDiceExpressionResult) explodeDice() DiceResults {
 	threshold := sder.diceExpression.modifierValue
 	d := NewDice(numSides)
 	if threshold <= 1 {
+		log.Debugf("Threshold <= 1 appending  %d results\n", ExplodingMaxDices)
 		results := make([]int, ExplodingMaxDices)
 		newValue := d.Roll()
 		results = append(results, newValue)
@@ -78,11 +79,11 @@ func (sder *simpleDiceExpressionResult) explodeDice() DiceResults {
 	results := make([]int, 0, 3)
 	newValue := d.Roll()
 	results = append(results, newValue)
-	fmt.Println("append 1st new result: ", newValue)
+	log.Debugln("append 1st new result: ", newValue)
 	for newValue >= threshold {
 		newValue = d.Roll()
 		results = append(results, newValue)
-		fmt.Println("append new result: ", newValue)
+		log.Debugln("append new result: ", newValue)
 	}
 	return results
 }

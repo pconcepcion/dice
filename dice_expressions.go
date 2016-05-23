@@ -3,7 +3,8 @@ package rpg
 
 import (
 	"errors"
-	"fmt"
+	"github.com/Sirupsen/logrus"
+	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 	"sort"
 	"strconv"
 	"strings"
@@ -31,6 +32,14 @@ const (
 	open
 	drop
 )
+
+var log = logrus.New()
+
+func init() {
+	log.Formatter = new(prefixed.TextFormatter)
+	log.Level = logrus.DebugLevel
+
+}
 
 // SimpleDiceExpression represents a dice expression with just one type of dice
 // dice expresions are based on the ones in RPtools ( http://lmwcs.com/rptools/wiki/Dice_Expressions )
@@ -74,6 +83,7 @@ func (sde *SimpleDiceExpression) handleTokenModifier(tok, nextToken Token) {
 			sde.modifier = reroll
 			sde.modifierValue, _ = strconv.Atoi(nextToken.val)
 		default:
+			log.Panicln("Unexpected modifier")
 			panic("Unexpected modifier")
 		}
 	case tokenEOF:
@@ -92,6 +102,7 @@ func (sde *SimpleDiceExpression) handleTokenModifier(tok, nextToken Token) {
 func (sde *SimpleDiceExpression) handleTokenNumber(tok, nextToken Token) {
 	switch nextToken.typ {
 	case tokenDice:
+		log.Panicln("Unexpected modifier")
 		panic("Unexpected diceToken")
 	case tokenModifier:
 		sde.sides, _ = strconv.Atoi(tok.val)
@@ -158,52 +169,52 @@ func (sde *SimpleDiceExpression) Roll() (DiceExpressionResult, error) {
 	for i := 0; i < sde.numDices; i++ {
 		result.diceResults[i] = d.Roll()
 	}
-	fmt.Printf("result.diceExpression: %+v", result.diceExpression)
-	fmt.Println("result.diceResults: ", result.diceResults)
+	log.WithFields(logrus.Fields{"result.diceExpresion": result.diceExpression}).Debug("Dice Expression")
+	log.WithFields(logrus.Fields{"result.diceResults": result.diceResults}).Info("Dices rolled")
 	sort.Sort(sort.Reverse(result.diceResults))
-	fmt.Println("sorted result.diceResults: ", result.diceResults)
+	log.WithFields(logrus.Fields{"result.diceResults": result.diceResults}).Debug("Sorted")
 	switch sde.modifier {
 	case keep:
 		result.diceResults = result.diceResults[:sde.modifierValue]
-		fmt.Println("kept result.diceResults: ", result.diceResults)
+		log.WithFields(logrus.Fields{"result.diceResults": result.diceResults}).Debug("Keep")
 		result.SumTotal()
 	case keepLower:
 		// TODO: solve this wihout so much sorting...
 		sort.Sort(result.diceResults)
 		result.diceResults = result.diceResults[:sde.modifierValue]
 		sort.Sort(sort.Reverse(result.diceResults))
-		fmt.Println("keptLower result.diceResults: ", result.diceResults)
+		log.WithFields(logrus.Fields{"result.diceResults": result.diceResults}).Debug("Keep Lower")
 		result.SumTotal()
 	case success:
 		result.Success(sde.modifierValue)
 	case exlpodingSuccess:
 		result.ExplodingSuccess(sde.modifierValue)
-		fmt.Println("explode result.diceResults: ", result.diceResults)
-		fmt.Println("explode result.extrDiceResults: ", result.extraDiceResults)
+		log.WithFields(logrus.Fields{"result.diceResults": result.diceResults,
+			"result.extrDiceResults": result.extraDiceResults}).Debug("Exploding Success")
 	case explode:
 		result.Explode()
-		fmt.Println("explode result.diceResults: ", result.diceResults)
-		fmt.Println("explode result.extrDiceResults: ", result.extraDiceResults)
+		log.WithFields(logrus.Fields{"result.diceResults": result.diceResults,
+			"result.extrDiceResults": result.extraDiceResults}).Debug("Explode")
 		result.SumTotal()
 	case open:
 		result.Open()
-		fmt.Println("explode result.diceResults: ", result.diceResults)
-		fmt.Println("explode result.extrDiceResults: ", result.extraDiceResults)
+		log.WithFields(logrus.Fields{"result.diceResults": result.diceResults,
+			"result.extrDiceResults": result.extraDiceResults}).Debug("Open")
 		sort.Sort(sort.Reverse(result.diceResults))
 		result.total += result.diceResults[0]
 	case reroll:
 		result.Reroll(sde.modifierValue)
 		sort.Sort(sort.Reverse(result.diceResults))
-		fmt.Println("reroll result.diceResults: ", result.diceResults)
+		log.WithFields(logrus.Fields{"result.diceResults": result.diceResults}).Debug("Reroll")
 	case drop:
 		result.diceResults = result.diceResults[:(sde.numDices - sde.modifierValue)]
-		fmt.Println("drop result.diceResults: ", result.diceResults)
+		log.WithFields(logrus.Fields{"result.diceResults": result.diceResults}).Debug("Drop")
 		result.SumTotal()
 	default:
 		result.SumTotal()
 	}
 	result.total += sde.constant
-	fmt.Println("total: ", result.total)
+	log.Infoln("total: ", result.total)
 
 	return result, nil
 }
