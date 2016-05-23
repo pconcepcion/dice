@@ -1,7 +1,12 @@
 // Package rpg provides tools to develop rpg games
 package rpg
 
-import "fmt"
+import (
+	"fmt"
+)
+
+// Maximum number of explosions of a dice
+const ExplodingMaxDices = 100
 
 type DiceResults []int
 
@@ -61,6 +66,15 @@ func (sder *simpleDiceExpressionResult) explodeDice() DiceResults {
 	numSides := sder.diceExpression.sides
 	threshold := sder.diceExpression.modifierValue
 	d := NewDice(numSides)
+	if threshold <= 1 {
+		results := make([]int, ExplodingMaxDices)
+		newValue := d.Roll()
+		results = append(results, newValue)
+		for i := 0; i < ExplodingMaxDices; i++ {
+			results[i] = d.Roll()
+		}
+		return results
+	}
 	results := make([]int, 0, 3)
 	newValue := d.Roll()
 	results = append(results, newValue)
