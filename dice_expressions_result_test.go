@@ -163,3 +163,36 @@ func TestSimpleDiceExpressionResultSumTotal(t *testing.T) {
 		}
 	}
 }
+
+// TestSimpleDiceExpressionResultExplodeDice test
+func TestSimpleDiceExpressionResultExplodeDice(t *testing.T) {
+	var simpleDiceExpressionResultTests = []simpleDiceExpressionResult{
+		simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 1}, DiceResults{1}, DiceResults{}, 0, false},
+		simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 4}, DiceResults{4, 3}, DiceResults{}, 0, false},
+		simpleDiceExpressionResult{SimpleDiceExpression{sides: 4, modifierValue: 4}, DiceResults{4, 3}, DiceResults{}, 0, false},
+		simpleDiceExpressionResult{SimpleDiceExpression{sides: 100, modifierValue: 96}, DiceResults{97, 3}, DiceResults{}, 0, false},
+	}
+	for i, sdert := range simpleDiceExpressionResultTests {
+		dr := sdert.explodeDice()
+		if len(dr) <= 0 {
+			t.Errorf("%d) expression: len(dr) = %d should be greater than 0: ", i, len(dr))
+			continue
+		}
+		threshold := sdert.diceExpression.modifierValue
+		numResults := 1
+		if threshold <= 1 {
+			numResults = 101
+		} else {
+			for _, r := range dr {
+				if r >= threshold {
+					numResults++
+				}
+			}
+		}
+		if len(dr) != numResults {
+			t.Errorf("%d) expression: %v, explossion Results: %v,  expected length  %d: got %d", i, sdert, dr, numResults, len(dr))
+		} else {
+			t.Logf("%d) expression: %v explossion Results %v: OK", i, sdert, dr)
+		}
+	}
+}
