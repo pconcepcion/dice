@@ -5,9 +5,10 @@ import (
 	"fmt"
 )
 
-// Maximum number of explosions of a dice
+// ExplodingMaxDices is the maximum number of explosions of a dice
 const ExplodingMaxDices = 100
 
+// DiceResults is an array of ints to hold the dice results
 type DiceResults []int
 
 // Implement the Sort interfaace
