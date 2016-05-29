@@ -3,6 +3,8 @@ package rpg
 
 import (
 	"fmt"
+	"github.com/Sirupsen/logrus"
+	"sort"
 )
 
 // ExplodingMaxDices is the maximum number of explosions of a dice
@@ -44,6 +46,51 @@ type simpleDiceExpressionResult struct {
 	extraDiceResults DiceResults
 	total            int
 	verbose          bool
+}
+
+// handleModifier does all the magic and applies the modifier corresponding to the received
+// SimpleDiceExpression to the result
+func (sder *simpleDiceExpressionResult) handleModifier(sde *SimpleDiceExpression) {
+	switch sde.modifier {
+	case keep:
+		sder.diceResults = sder.diceResults[:sde.modifierValue]
+		log.WithFields(logrus.Fields{"sder.diceResults": sder.diceResults}).Debug("Keep")
+		sder.SumTotal()
+	case keepLower:
+		// TODO: solve this wihout so much sorting...
+		sort.Sort(sder.diceResults)
+		sder.diceResults = sder.diceResults[:sde.modifierValue]
+		sort.Sort(sort.Reverse(sder.diceResults))
+		log.WithFields(logrus.Fields{"sder.diceResults": sder.diceResults}).Debug("Keep Lower")
+		sder.SumTotal()
+	case success:
+		sder.Success(sde.modifierValue)
+	case exlpodingSuccess:
+		sder.ExplodingSuccess(sde.modifierValue)
+		log.WithFields(logrus.Fields{"sder.diceResults": sder.diceResults,
+			"sder.extrDiceResults": sder.extraDiceResults}).Debug("Exploding Success")
+	case explode:
+		sder.Explode()
+		log.WithFields(logrus.Fields{"sder.diceResults": sder.diceResults,
+			"sder.extrDiceResults": sder.extraDiceResults}).Debug("Explode")
+		sder.SumTotal()
+	case open:
+		sder.Open()
+		log.WithFields(logrus.Fields{"sder.diceResults": sder.diceResults,
+			"sder.extrDiceResults": sder.extraDiceResults}).Debug("Open")
+		sort.Sort(sort.Reverse(sder.diceResults))
+		sder.total += sder.diceResults[0]
+	case reroll:
+		sder.Reroll(sde.modifierValue)
+		sort.Sort(sort.Reverse(sder.diceResults))
+		log.WithFields(logrus.Fields{"sder.diceResults": sder.diceResults}).Debug("Reroll")
+	case drop:
+		sder.diceResults = sder.diceResults[:(sde.numDices - sde.modifierValue)]
+		log.WithFields(logrus.Fields{"sder.diceResults": sder.diceResults}).Debug("Drop")
+		sder.SumTotal()
+	default:
+		sder.SumTotal()
+	}
 }
 
 // Success counts the number of results with a value mayor or equal to the target value and stores the result in the total

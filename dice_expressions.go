@@ -195,46 +195,7 @@ func (sde *SimpleDiceExpression) Roll() (DiceExpressionResult, error) {
 	log.WithFields(logrus.Fields{"result.diceResults": result.diceResults}).Info("Dices rolled")
 	sort.Sort(sort.Reverse(result.diceResults))
 	log.WithFields(logrus.Fields{"result.diceResults": result.diceResults}).Debug("Sorted")
-	switch sde.modifier {
-	case keep:
-		result.diceResults = result.diceResults[:sde.modifierValue]
-		log.WithFields(logrus.Fields{"result.diceResults": result.diceResults}).Debug("Keep")
-		result.SumTotal()
-	case keepLower:
-		// TODO: solve this wihout so much sorting...
-		sort.Sort(result.diceResults)
-		result.diceResults = result.diceResults[:sde.modifierValue]
-		sort.Sort(sort.Reverse(result.diceResults))
-		log.WithFields(logrus.Fields{"result.diceResults": result.diceResults}).Debug("Keep Lower")
-		result.SumTotal()
-	case success:
-		result.Success(sde.modifierValue)
-	case exlpodingSuccess:
-		result.ExplodingSuccess(sde.modifierValue)
-		log.WithFields(logrus.Fields{"result.diceResults": result.diceResults,
-			"result.extrDiceResults": result.extraDiceResults}).Debug("Exploding Success")
-	case explode:
-		result.Explode()
-		log.WithFields(logrus.Fields{"result.diceResults": result.diceResults,
-			"result.extrDiceResults": result.extraDiceResults}).Debug("Explode")
-		result.SumTotal()
-	case open:
-		result.Open()
-		log.WithFields(logrus.Fields{"result.diceResults": result.diceResults,
-			"result.extrDiceResults": result.extraDiceResults}).Debug("Open")
-		sort.Sort(sort.Reverse(result.diceResults))
-		result.total += result.diceResults[0]
-	case reroll:
-		result.Reroll(sde.modifierValue)
-		sort.Sort(sort.Reverse(result.diceResults))
-		log.WithFields(logrus.Fields{"result.diceResults": result.diceResults}).Debug("Reroll")
-	case drop:
-		result.diceResults = result.diceResults[:(sde.numDices - sde.modifierValue)]
-		log.WithFields(logrus.Fields{"result.diceResults": result.diceResults}).Debug("Drop")
-		result.SumTotal()
-	default:
-		result.SumTotal()
-	}
+	result.handleModifier(sde)
 	result.total += sde.constant
 	log.Infoln("total: ", result.total)
 
