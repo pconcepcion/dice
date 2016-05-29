@@ -305,3 +305,24 @@ func TestSimpleDiceExpressionResultReroll(t *testing.T) {
 		t.Logf("%d) expression: %v Reroll %v: OK", i, sdert, sdert.extraDiceResults)
 	}
 }
+
+// TestSimpleDiceExpressionResultGetResults test
+func TestSimpleDiceExpressionResultGetResults(t *testing.T) {
+	var simpleDiceExpressionResultTests = []struct {
+		sder simpleDiceExpressionResult
+		out  DiceResults
+	}{
+		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{7}, DiceResults{}, 0, false}, DiceResults{7}},
+		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{}, DiceResults{}, 0, false}, DiceResults{}},
+		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{1, 2, 3, 4, 5, 6, 7}, DiceResults{}, 0, false}, DiceResults{1, 2, 3, 4, 5, 6, 7}},
+	}
+	for i, sdert := range simpleDiceExpressionResultTests {
+	res:
+		sdert.sder.GetResults()
+		if res != sdert.out {
+			t.Errorf("%d) expression: %v expected results  %d: got %d", i, sdert.sder, sdert.out, res)
+		} else {
+			t.Logf("%d) expression: %v GetResults OK", i, sdert.sder)
+		}
+	}
+}
