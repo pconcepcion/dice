@@ -317,9 +317,8 @@ func TestSimpleDiceExpressionResultGetResults(t *testing.T) {
 		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{1, 2, 3, 4, 5, 6, 7}, DiceResults{}, 0, false}, DiceResults{1, 2, 3, 4, 5, 6, 7}},
 	}
 	for i, sdert := range simpleDiceExpressionResultTests {
-	res:
-		sdert.sder.GetResults()
-		if res != sdert.out {
+		res := sdert.sder.GetResults()
+		if !assertEqualDiceReults(res, sdert.out) {
 			t.Errorf("%d) expression: %v expected results  %d: got %d", i, sdert.sder, sdert.out, res)
 		} else {
 			t.Logf("%d) expression: %v GetResults OK", i, sdert.sder)
