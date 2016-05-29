@@ -279,7 +279,29 @@ func TestSimpleDiceExpressionResultExplodingSuccess(t *testing.T) {
 		if sdert.sder.total < sdert.minTotal {
 			t.Errorf("%d) expression: %v expected min total of %d: got %d", i, sdert.sder, sdert.minTotal, sdert.sder.total)
 		} else {
-			t.Logf("%d) expression: %v Explode %v: OK", i, sdert.sder, sdert.sder.extraDiceResults)
+			t.Logf("%d) expression: %v ExplodingSuccess %v: OK", i, sdert.sder, sdert.sder.extraDiceResults)
 		}
+	}
+}
+
+// TestSimpleDiceExpressionResultReroll test
+func TestSimpleDiceExpressionResultReroll(t *testing.T) {
+	var simpleDiceExpressionResultTests = []simpleDiceExpressionResult{
+		simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 6}, DiceResults{}, DiceResults{}, 0, false},
+		simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 6}, DiceResults{1}, DiceResults{}, 0, false},
+		simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 6}, DiceResults{6, 1}, DiceResults{}, 0, false},
+		simpleDiceExpressionResult{SimpleDiceExpression{sides: 4, modifierValue: 3}, DiceResults{4, 3, 2, 1}, DiceResults{}, 0, false},
+		simpleDiceExpressionResult{SimpleDiceExpression{sides: 100, modifierValue: 96}, DiceResults{100, 96, 35, 1}, DiceResults{}, 0, false},
+		simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 6}, DiceResults{6, 6, 6, 6, 3, 3, 3, 3, 1}, DiceResults{}, 0, false},
+	}
+	for i, sdert := range simpleDiceExpressionResultTests {
+		sdert.Reroll(sdert.diceExpression.modifierValue)
+		for _, r := range sdert.diceResults {
+			if r < sdert.diceExpression.modifierValue {
+				t.Errorf("%d) expression: %v expected min result %d: got %d KO", i, sdert, sdert.diceExpression.modifierValue, r)
+				break
+			}
+		}
+		t.Logf("%d) expression: %v Reroll %v: OK", i, sdert, sdert.extraDiceResults)
 	}
 }
