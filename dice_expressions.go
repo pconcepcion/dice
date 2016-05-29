@@ -57,44 +57,66 @@ type Roller interface {
 	Roll() DiceExpressionResult
 }
 
-// TODO:handle strconv.Atoi errors
+// extractTokenValue extracts from the received Token the value and converts it to to an int
+// it will panic on failure
+func extractTokneValue(tok Token) int {
+	intValue, err := strconv.Atoi(tok.val)
+	if err != nil {
+		log.Panicf("Unexpected token value, not an int, %v\n", tok)
+		panic("Unexpected token value, not an int")
+	}
+	return intValue
+}
 
-// handleTokenMoffier handles the Modifier possible extra number
+// handleNextTokenNumber handles the state when the next token is a tokenNumber
+func (sde *SimpleDiceExpression) handleNextTokenNumber(tok, nextToken Token) {
+	switch tok.val {
+	case "k":
+		sde.modifierValue = extractTokneValue(nextToken)
+		sde.modifier = keep
+	case "kl":
+		sde.modifierValue = extractTokneValue(nextToken)
+		sde.modifier = keepLower
+	case "e":
+		sde.modifierValue = extractTokneValue(nextToken)
+		sde.modifier = explode
+	case "s":
+		sde.modifierValue = extractTokneValue(nextToken)
+		sde.modifier = success
+	case "es":
+		sde.modifier = exlpodingSuccess
+		sde.modifierValue = extractTokneValue(nextToken)
+	case "r":
+		sde.modifier = reroll
+		sde.modifierValue = extractTokneValue(nextToken)
+	default:
+		log.Panicln("Unexpected modifier")
+		panic("Unexpected modifier")
+	}
+}
+
+// handleNextTokenEOF handles the state when the next token is a tokenEOF
+func (sde *SimpleDiceExpression) handleNextTokenEOF(tok, nextToken Token) {
+	switch tok.val {
+	case "e":
+		sde.modifier = explode
+		sde.modifierValue = sde.sides
+	case "o":
+		sde.modifier = open
+		sde.modifierValue = sde.sides
+	}
+}
+
+// handleTokenMoffier handles the Modifier optional extra number
 func (sde *SimpleDiceExpression) handleTokenModifier(tok, nextToken Token) {
 	switch nextToken.typ {
 	case tokenNumber:
-		switch tok.val {
-		case "k":
-			sde.modifierValue, _ = strconv.Atoi(nextToken.val)
-			sde.modifier = keep
-		case "kl":
-			sde.modifierValue, _ = strconv.Atoi(nextToken.val)
-			sde.modifier = keepLower
-		case "e":
-			sde.modifierValue, _ = strconv.Atoi(nextToken.val)
-			sde.modifier = explode
-		case "s":
-			sde.modifierValue, _ = strconv.Atoi(nextToken.val)
-			sde.modifier = success
-		case "es":
-			sde.modifier = exlpodingSuccess
-			sde.modifierValue, _ = strconv.Atoi(nextToken.val)
-		case "r":
-			sde.modifier = reroll
-			sde.modifierValue, _ = strconv.Atoi(nextToken.val)
-		default:
-			log.Panicln("Unexpected modifier")
-			panic("Unexpected modifier")
-		}
+		sde.handleNextTokenNumber(tok, nextToken)
 	case tokenEOF:
-		switch tok.val {
-		case "e":
-			sde.modifier = explode
-			sde.modifierValue = sde.sides
-		case "o":
-			sde.modifier = open
-			sde.modifierValue = sde.sides
-		}
+		sde.handleNextTokenEOF(tok, nextToken)
+	default:
+		log.Panicln("Unexpected nextToken")
+		panic("Unexpected nextToken")
 	}
 }
 
@@ -105,10 +127,10 @@ func (sde *SimpleDiceExpression) handleTokenNumber(tok, nextToken Token) {
 		log.Panicln("Unexpected modifier")
 		panic("Unexpected diceToken")
 	case tokenModifier:
-		sde.sides, _ = strconv.Atoi(tok.val)
+		sde.sides = extractTokneValue(tok)
 	case tokenEOF:
 		if sde.sides == 0 {
-			sde.sides, _ = strconv.Atoi(tok.val)
+			sde.sides = extractTokneValue(tok)
 		}
 		// if not the caller would know the modifier and assing to the propper place the value
 	}
@@ -118,9 +140,9 @@ func (sde *SimpleDiceExpression) handleTokenNumber(tok, nextToken Token) {
 func (sde *SimpleDiceExpression) handleInitialTokenNumber(tok, nextToken Token) {
 	switch nextToken.typ {
 	case tokenEOF:
-		sde.constant, _ = strconv.Atoi(tok.val)
+		sde.constant = extractTokneValue(tok)
 	case tokenDice:
-		sde.numDices, _ = strconv.Atoi(tok.val)
+		sde.numDices = extractTokneValue(tok)
 	}
 }
 
