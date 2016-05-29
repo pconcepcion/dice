@@ -215,14 +215,14 @@ func TestSimpleDiceExpressionResultOpen(t *testing.T) {
 			continue
 		}
 		ok := true
-		for j, r := range sdert.sder.extraDiceResults {
+		for j, r := range sdert.sder.diceResults[:sdert.out] {
 			/*if sdert.sder.diceResults[j] != (sdert.sder.diceExpression.sides + r) {
 				t.Errorf("%d) diceResut[%d] expected to be %d: got %d -> expression: %v KO", i, j, sdert.sder.diceExpression.sides+r, sdert.sder.diceResults[j], sdert.sder)
 				ok = false
 				break
 			}*/
 			if sdert.sder.diceResults[j] <= sdert.sder.diceExpression.sides {
-				t.Errorf("%d) diceResut[%d] expected to be greater than %d got %d -> expression: %v KO", i, j, sdert.sder.diceExpression.sides, r, sdert.sder)
+				t.Errorf("%d) diceResuts[%d] expected to be greater than %d got %d -> expression: %v KO", i, j, sdert.sder.diceExpression.sides, r, sdert.sder)
 				ok = false
 				break
 			}
