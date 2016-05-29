@@ -325,3 +325,23 @@ func TestSimpleDiceExpressionResultGetResults(t *testing.T) {
 		}
 	}
 }
+
+// TestSimpleDiceExpressionResultGetTotal test
+func TestSimpleDiceExpressionResultGetTotal(t *testing.T) {
+	var simpleDiceExpressionResultTests = []struct {
+		sder simpleDiceExpressionResult
+		out  int
+	}{
+		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{7}, DiceResults{}, 0, false}, 0},
+		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{}, DiceResults{}, 0, false}, 0},
+		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{1, 2, 3, 4, 5, 6, 7}, DiceResults{}, 28, false}, 28},
+	}
+	for i, sdert := range simpleDiceExpressionResultTests {
+		res := sdert.sder.GetTotal()
+		if res != sdert.out {
+			t.Errorf("%d) expression: %v expected total %d: got %d", i, sdert.sder, sdert.out, res)
+		} else {
+			t.Logf("%d) expression: %v GetTotal OK", i, sdert.sder)
+		}
+	}
+}
