@@ -65,7 +65,7 @@ func (sder *simpleDiceExpressionResult) handleModifier(sde *SimpleDiceExpression
 		sder.SumTotal()
 	case success:
 		sder.Success(sde.modifierValue)
-	case exlpodingSuccess:
+	case explodingSuccess:
 		sder.ExplodingSuccess(sde.modifierValue)
 		log.WithFields(logrus.Fields{"sder.diceResults": sder.diceResults,
 			"sder.extrDiceResults": sder.extraDiceResults}).Debug("Exploding Success")

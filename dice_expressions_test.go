@@ -39,14 +39,14 @@ func TestParse(t *testing.T) {
 		{"4d8r2", SimpleDiceExpression{numDices: 4, expressionText: "4d8r2", sides: 8, modifier: reroll, modifierValue: 2}},
 		{"4d8s6", SimpleDiceExpression{numDices: 4, expressionText: "4d8s6", sides: 8, modifier: success, modifierValue: 6}},
 		{"6d6e", SimpleDiceExpression{numDices: 6, expressionText: "6d6e", sides: 6, modifier: explode, modifierValue: 6}},
-		{"7d6es8", SimpleDiceExpression{numDices: 7, expressionText: "7d6es8", sides: 6, modifier: exlpodingSuccess, modifierValue: 8}},
+		{"7d6es8", SimpleDiceExpression{numDices: 7, expressionText: "7d6es8", sides: 6, modifier: explodingSuccess, modifierValue: 8}},
 		{"8d6o", SimpleDiceExpression{numDices: 8, expressionText: "8d6o", sides: 6, modifier: open, modifierValue: 6}},
 		{"10d10o", SimpleDiceExpression{numDices: 10, expressionText: "10d10o", sides: 10, modifier: open, modifierValue: 10}},
 		// More complex expressions (omiting the number of dices -> 1 dice)
 		{"d6o", SimpleDiceExpression{numDices: 1, expressionText: "d6o", sides: 6, modifier: open, modifierValue: 6}},
 		{"d6e", SimpleDiceExpression{numDices: 1, expressionText: "d6e", sides: 6, modifier: explode, modifierValue: 6}},
-		{"d6es4", SimpleDiceExpression{numDices: 1, expressionText: "d6es4", sides: 6, modifier: exlpodingSuccess, modifierValue: 4}},
-		{"d100es96", SimpleDiceExpression{numDices: 1, expressionText: "d100es96", sides: 100, modifier: exlpodingSuccess, modifierValue: 96}},
+		{"d6es4", SimpleDiceExpression{numDices: 1, expressionText: "d6es4", sides: 6, modifier: explodingSuccess, modifierValue: 4}},
+		{"d100es96", SimpleDiceExpression{numDices: 1, expressionText: "d100es96", sides: 100, modifier: explodingSuccess, modifierValue: 96}},
 		{"d100k1", SimpleDiceExpression{numDices: 1, expressionText: "d100k1", sides: 100, modifier: keep, modifierValue: 1}},
 		// Expressions wiht 0
 		{"0", SimpleDiceExpression{expressionText: "0", constant: 0}},
@@ -54,7 +54,7 @@ func TestParse(t *testing.T) {
 		{"0d6o", SimpleDiceExpression{numDices: 0, expressionText: "0d6o", sides: 6, modifier: open, modifierValue: 6}},
 		{"d0e", SimpleDiceExpression{numDices: 1, expressionText: "d0e", sides: 0, modifier: explode, modifierValue: 0}},
 		{"d0e0", SimpleDiceExpression{numDices: 1, expressionText: "d0e0", sides: 0, modifier: explode, modifierValue: 0}},
-		{"d6es0", SimpleDiceExpression{numDices: 1, expressionText: "d6es0", sides: 6, modifier: exlpodingSuccess, modifierValue: 0}},
+		{"d6es0", SimpleDiceExpression{numDices: 1, expressionText: "d6es0", sides: 6, modifier: explodingSuccess, modifierValue: 0}},
 
 		/*
 			{"10 00", []string{"", ""}, 0, 0},
@@ -115,15 +115,15 @@ func TestRoll(t *testing.T) {
 		{"4d8r3", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 4, expressionText: "4d8r3", sides: 8, modifier: reroll, modifierValue: 3}}},
 		{"4d8s6", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 4, expressionText: "4d8s6", sides: 8, modifier: success, modifierValue: 6}}},
 		{"5d4e", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 5, expressionText: "5d4e", sides: 4, modifier: explode, modifierValue: 4}}},
-		{"7d6es8", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 7, expressionText: "7d6es8", sides: 6, modifier: exlpodingSuccess, modifierValue: 8}}},
+		{"7d6es8", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 7, expressionText: "7d6es8", sides: 6, modifier: explodingSuccess, modifierValue: 8}}},
 		{"8d6o", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 8, expressionText: "8d6o", sides: 6, modifier: open, modifierValue: 6}}},
 		{"10d10o", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 10, expressionText: "10d10o", sides: 10, modifier: open, modifierValue: 10}}},
 		// More complex expressions (omiting the number of dices -> 1 dice)
 		{"d6o", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 1, expressionText: "d6o", sides: 6, modifier: open, modifierValue: 6}}},
 		{"d6e", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 1, expressionText: "d6e", sides: 6, modifier: explode, modifierValue: 6}}},
 		{"d6e4", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 1, expressionText: "d6e4", sides: 6, modifier: explode, modifierValue: 4}}},
-		{"d6es4", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 1, expressionText: "d6es4", sides: 6, modifier: exlpodingSuccess, modifierValue: 4}}},
-		{"d100es96", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 1, expressionText: "d100es96", sides: 100, modifier: exlpodingSuccess, modifierValue: 96}}},
+		{"d6es4", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 1, expressionText: "d6es4", sides: 6, modifier: explodingSuccess, modifierValue: 4}}},
+		{"d100es96", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 1, expressionText: "d100es96", sides: 100, modifier: explodingSuccess, modifierValue: 96}}},
 		{"d100e96", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 1, expressionText: "d100e96", sides: 100, modifier: explode, modifierValue: 96}}},
 		{"d100k1", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 1, expressionText: "d100k1", sides: 100, modifier: keep, modifierValue: 1}}},
 		// Expressions wiht 0
@@ -132,7 +132,7 @@ func TestRoll(t *testing.T) {
 		{"0d6o", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 0, expressionText: "0d6o", sides: 6, modifier: open, modifierValue: 6}}},
 		{"d0e", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 1, expressionText: "d0e", sides: 0, modifier: explode, modifierValue: 0}}},
 		{"d0e0", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 1, expressionText: "d0e0", sides: 0, modifier: explode, modifierValue: 0}}},
-		{"d6es0", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 1, expressionText: "d6es0", sides: 6, modifier: exlpodingSuccess, modifierValue: 0}}},
+		{"d6es0", simpleDiceExpressionResult{diceExpression: SimpleDiceExpression{numDices: 1, expressionText: "d6es0", sides: 6, modifier: explodingSuccess, modifierValue: 0}}},
 
 		/*
 			{"10 00", []string{"", ""}, 0, 0},

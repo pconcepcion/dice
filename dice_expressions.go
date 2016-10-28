@@ -2,8 +2,8 @@
 package rpg
 
 import (
-	"errors"
 	"github.com/Sirupsen/logrus"
+	"github.com/pkg/errors"
 	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 	"sort"
 	"strconv"
@@ -27,7 +27,7 @@ const (
 	keepLower
 	reroll
 	success
-	exlpodingSuccess
+	explodingSuccess
 	explode
 	open
 	drop
@@ -59,7 +59,7 @@ type Roller interface {
 
 // extractTokenValue extracts from the received Token the value and converts it to to an int
 // it will panic on failure
-func extractTokneValue(tok Token) int {
+func extractTokenValue(tok Token) int {
 	intValue, err := strconv.Atoi(tok.val)
 	if err != nil {
 		log.Panicf("Unexpected token value, not an int, %v\n", tok)
@@ -68,31 +68,38 @@ func extractTokneValue(tok Token) int {
 	return intValue
 }
 
+// NewSimpleDiceExpression creates a new SimpleDiceExpresion initialized expressionText received but
+// doesn't parse the expression SimpleDiceExpression.parse() should be called to parse the expression
+func NewSimpleDiceExpression(expression string) SimpleDiceExpression {
+	return SimpleDiceExpression{expressionText: expression}
+}
+
 // handleNextTokenNumber handles the state when the next token is a tokenNumber
 func (sde *SimpleDiceExpression) handleNextTokenNumber(tok, nextToken Token) {
 	switch tok.val {
 	case "k":
-		sde.modifierValue = extractTokneValue(nextToken)
-		sde.modifier = keep
+		sde.handleExtraTokenModifier(nextToken, keep)
 	case "kl":
-		sde.modifierValue = extractTokneValue(nextToken)
-		sde.modifier = keepLower
+		sde.handleExtraTokenModifier(nextToken, keepLower)
 	case "e":
-		sde.modifierValue = extractTokneValue(nextToken)
-		sde.modifier = explode
+		sde.handleExtraTokenModifier(nextToken, explode)
 	case "s":
-		sde.modifierValue = extractTokneValue(nextToken)
-		sde.modifier = success
+		sde.handleExtraTokenModifier(nextToken, success)
 	case "es":
-		sde.modifier = exlpodingSuccess
-		sde.modifierValue = extractTokneValue(nextToken)
+		sde.handleExtraTokenModifier(nextToken, explodingSuccess)
 	case "r":
-		sde.modifier = reroll
-		sde.modifierValue = extractTokneValue(nextToken)
+		sde.handleExtraTokenModifier(nextToken, reroll)
 	default:
 		log.Panicln("Unexpected modifier")
 		panic("Unexpected modifier")
 	}
+}
+
+// handleExtraTokenModifier handles a modifier that requires a numeric extra token, stores the
+// modifier on sde and the extra token value on sde.modifierValue
+func (sde *SimpleDiceExpression) handleExtraTokenModifier(nextToken Token, modifier diceModifier) {
+	sde.modifierValue = extractTokenValue(nextToken)
+	sde.modifier = modifier
 }
 
 // handleNextTokenEOF handles the state when the next token is a tokenEOF
@@ -127,10 +134,10 @@ func (sde *SimpleDiceExpression) handleTokenNumber(tok, nextToken Token) {
 		log.Panicln("Unexpected modifier")
 		panic("Unexpected diceToken")
 	case tokenModifier:
-		sde.sides = extractTokneValue(tok)
+		sde.sides = extractTokenValue(tok)
 	case tokenEOF:
 		if sde.sides == 0 {
-			sde.sides = extractTokneValue(tok)
+			sde.sides = extractTokenValue(tok)
 		}
 		// if not the caller would know the modifier and assing to the propper place the value
 	}
@@ -140,9 +147,9 @@ func (sde *SimpleDiceExpression) handleTokenNumber(tok, nextToken Token) {
 func (sde *SimpleDiceExpression) handleInitialTokenNumber(tok, nextToken Token) {
 	switch nextToken.typ {
 	case tokenEOF:
-		sde.constant = extractTokneValue(tok)
+		sde.constant = extractTokenValue(tok)
 	case tokenDice:
-		sde.numDices = extractTokneValue(tok)
+		sde.numDices = extractTokenValue(tok)
 	}
 }
 
@@ -180,7 +187,7 @@ func (sde *SimpleDiceExpression) parse() error {
 //Roll the expression and return the reslut or an error
 func (sde *SimpleDiceExpression) Roll() (DiceExpressionResult, error) {
 	if err := sde.parse(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Parsing error")
 	}
 	if sde.numDices == 0 || sde.sides == 0 {
 		return &simpleDiceExpressionResult{diceExpression: *sde, total: 0}, nil
