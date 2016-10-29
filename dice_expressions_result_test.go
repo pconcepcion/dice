@@ -7,8 +7,8 @@ import (
 
 // Helper Functions
 
-// assertEcualDiceResults compares two DiceResults slices and returns true if both are have the same content
-func assertEqualDiceReults(a, b DiceResults) bool {
+// assertEcualResults compares two Results slices and returns true if both are have the same content
+func assertEqualDiceReults(a, b Results) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -20,18 +20,18 @@ func assertEqualDiceReults(a, b DiceResults) bool {
 	return true
 }
 
-// TestDiceResultsLen test
-func TestDiceResultsLen(t *testing.T) {
-	var diceResultsTests = []struct {
-		dr  DiceResults
+// TestResultsLen test
+func TestResultsLen(t *testing.T) {
+	var ResultsTests = []struct {
+		dr  Results
 		out int
 	}{
-		{DiceResults{}, 0},
-		{DiceResults{0}, 1},
-		{DiceResults{1, 2}, 2},
-		{DiceResults{4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4}, 20},
+		{Results{}, 0},
+		{Results{0}, 1},
+		{Results{1, 2}, 2},
+		{Results{4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4}, 20},
 	}
-	for i, drt := range diceResultsTests {
+	for i, drt := range ResultsTests {
 		res := drt.dr.Len()
 		if res != drt.out {
 			t.Errorf("%d) Len KO expected  %d: got %d", i, drt.dr, res)
@@ -41,21 +41,21 @@ func TestDiceResultsLen(t *testing.T) {
 	}
 }
 
-// TestDiceResultsSwap test
-func TestDiceResultsSwap(t *testing.T) {
-	var diceResultsTests = []struct {
-		dr  DiceResults
+// TestResultsSwap test
+func TestResultsSwap(t *testing.T) {
+	var ResultsTests = []struct {
+		dr  Results
 		i   int
 		j   int
-		out DiceResults
+		out Results
 	}{
-		{DiceResults{1, 2}, 0, 1, DiceResults{2, 1}},
-		{DiceResults{1, 2, 3, 4, 5, 6, 7}, 0, 0, DiceResults{1, 2, 3, 4, 5, 6, 7}},
-		{DiceResults{1, 2, 3, 4, 5, 6, 7}, 3, 4, DiceResults{1, 2, 3, 5, 4, 6, 7}},
-		{DiceResults{1, 2, 3, 4, 5, 6, 7}, 2, 2, DiceResults{1, 2, 3, 4, 5, 6, 7}},
-		{DiceResults{1, 2, 3, 4, 5, 6, 7}, 1, 5, DiceResults{1, 6, 3, 4, 5, 2, 7}},
+		{Results{1, 2}, 0, 1, Results{2, 1}},
+		{Results{1, 2, 3, 4, 5, 6, 7}, 0, 0, Results{1, 2, 3, 4, 5, 6, 7}},
+		{Results{1, 2, 3, 4, 5, 6, 7}, 3, 4, Results{1, 2, 3, 5, 4, 6, 7}},
+		{Results{1, 2, 3, 4, 5, 6, 7}, 2, 2, Results{1, 2, 3, 4, 5, 6, 7}},
+		{Results{1, 2, 3, 4, 5, 6, 7}, 1, 5, Results{1, 6, 3, 4, 5, 2, 7}},
 	}
-	for i, drt := range diceResultsTests {
+	for i, drt := range ResultsTests {
 		originaldr := drt.dr
 		auxdr := &originaldr
 		t.Log(auxdr)
@@ -69,22 +69,22 @@ func TestDiceResultsSwap(t *testing.T) {
 	}
 }
 
-// TestDiceResultsLess test
-func TestDiceResultsLess(t *testing.T) {
-	var diceResultsTests = []struct {
-		dr  DiceResults
+// TestResultsLess test
+func TestResultsLess(t *testing.T) {
+	var ResultsTests = []struct {
+		dr  Results
 		i   int
 		j   int
 		out bool
 	}{
-		{DiceResults{1, 2}, 0, 1, true},
-		{DiceResults{1, 2, 3, 4, 5, 6, 7}, 0, 0, false},
-		{DiceResults{1, 2, 3, 4, 5, 6, 7}, 0, 0, false},
-		{DiceResults{1, 2, 3, 4, 5, 6, 7}, 2, 3, true},
-		{DiceResults{1, 2, 3, 4, 5, 6, 7}, 6, 0, false},
-		{DiceResults{1, 2, 3, 4, 5, 6, 7}, 0, 6, true},
+		{Results{1, 2}, 0, 1, true},
+		{Results{1, 2, 3, 4, 5, 6, 7}, 0, 0, false},
+		{Results{1, 2, 3, 4, 5, 6, 7}, 0, 0, false},
+		{Results{1, 2, 3, 4, 5, 6, 7}, 2, 3, true},
+		{Results{1, 2, 3, 4, 5, 6, 7}, 6, 0, false},
+		{Results{1, 2, 3, 4, 5, 6, 7}, 0, 6, true},
 	}
-	for i, drt := range diceResultsTests {
+	for i, drt := range ResultsTests {
 		res := drt.dr.Less(drt.i, drt.j)
 		if res != drt.out {
 			t.Errorf("%d) comparing %d and %d expected  %t: got %t", i, drt.dr[drt.i], drt.dr[drt.j], drt.out, res)
@@ -94,19 +94,19 @@ func TestDiceResultsLess(t *testing.T) {
 	}
 }
 
-// TestDiceResultsUSum test
-func TestDiceResultsSum(t *testing.T) {
-	var diceResultsTests = []struct {
-		dr  DiceResults
+// TestResultsUSum test
+func TestResultsSum(t *testing.T) {
+	var ResultsTests = []struct {
+		dr  Results
 		out int
 	}{
-		{DiceResults{1, 2}, 3},
-		{DiceResults{1, 2, 3, 4, 5, 6, 7}, 28},
-		{DiceResults{1, 2, 3, 4, 5, 6}, 21},
-		{DiceResults{}, 0},
-		{DiceResults{5}, 5},
+		{Results{1, 2}, 3},
+		{Results{1, 2, 3, 4, 5, 6, 7}, 28},
+		{Results{1, 2, 3, 4, 5, 6}, 21},
+		{Results{}, 0},
+		{Results{5}, 5},
 	}
-	for i, drt := range diceResultsTests {
+	for i, drt := range ResultsTests {
 		res := drt.dr.Sum()
 		if res != drt.out {
 			t.Errorf("%d) sum of the elements of %d expected  %d: got %d", i, drt.dr, drt.out, res)
@@ -116,24 +116,24 @@ func TestDiceResultsSum(t *testing.T) {
 	}
 }
 
-// TestSimpleDiceExpressionResultSuccess test
-func TestSimpleDiceExpressionResultSuccess(t *testing.T) {
-	var simpleDiceExpressionResultTests = []struct {
-		sder   simpleDiceExpressionResult
+// TestSimpleExpressionResultSuccess test
+func TestSimpleExpressionResultSuccess(t *testing.T) {
+	var simpleExpressionResultTests = []struct {
+		sder   simpleExpressionResult
 		target int
 		out    int
 	}{
-		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{7}, DiceResults{}, 0, false}, 4, 1},
-		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{}, DiceResults{}, 0, false}, 4, 0},
-		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{7}, DiceResults{}, 0, false}, 10, 0},
-		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{1, 2, 3, 4, 5, 6, 7}, DiceResults{}, 0, false}, 4, 4},
-		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{1, 2, 3, 4, 5, 6, 7}, DiceResults{}, 0, false}, 6, 2},
-		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{1, 2, 3, 4, 5, 6, 7}, DiceResults{}, 0, false}, 6, 2},
-		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{1, 2, 3, 4, 5, 6, 7}, DiceResults{}, 0, false}, 2, 6},
-		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{1, 2, 3, 4, 5, 6, 7}, DiceResults{}, 0, false}, 9, 0},
-		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{1, 2, 3, 4, 5, 6, 7}, DiceResults{}, 0, false}, 0, 7},
+		{simpleExpressionResult{SimpleExpression{}, Results{7}, Results{}, 0, false}, 4, 1},
+		{simpleExpressionResult{SimpleExpression{}, Results{}, Results{}, 0, false}, 4, 0},
+		{simpleExpressionResult{SimpleExpression{}, Results{7}, Results{}, 0, false}, 10, 0},
+		{simpleExpressionResult{SimpleExpression{}, Results{1, 2, 3, 4, 5, 6, 7}, Results{}, 0, false}, 4, 4},
+		{simpleExpressionResult{SimpleExpression{}, Results{1, 2, 3, 4, 5, 6, 7}, Results{}, 0, false}, 6, 2},
+		{simpleExpressionResult{SimpleExpression{}, Results{1, 2, 3, 4, 5, 6, 7}, Results{}, 0, false}, 6, 2},
+		{simpleExpressionResult{SimpleExpression{}, Results{1, 2, 3, 4, 5, 6, 7}, Results{}, 0, false}, 2, 6},
+		{simpleExpressionResult{SimpleExpression{}, Results{1, 2, 3, 4, 5, 6, 7}, Results{}, 0, false}, 9, 0},
+		{simpleExpressionResult{SimpleExpression{}, Results{1, 2, 3, 4, 5, 6, 7}, Results{}, 0, false}, 0, 7},
 	}
-	for i, sdert := range simpleDiceExpressionResultTests {
+	for i, sdert := range simpleExpressionResultTests {
 		sdert.sder.Success(sdert.target)
 		if sdert.sder.total != sdert.out {
 			t.Errorf("%d) expression: %v target: %d expected  %d: got %d", i, sdert.sder, sdert.target, sdert.out, sdert.sder.total)
@@ -143,18 +143,18 @@ func TestSimpleDiceExpressionResultSuccess(t *testing.T) {
 	}
 }
 
-// TestSimpleDiceExpressionResultSumTotal test
-func TestSimpleDiceExpressionResultSumTotal(t *testing.T) {
-	var simpleDiceExpressionResultTests = []struct {
-		sder simpleDiceExpressionResult
+// TestSimpleExpressionResultSumTotal test
+func TestSimpleExpressionResultSumTotal(t *testing.T) {
+	var simpleExpressionResultTests = []struct {
+		sder simpleExpressionResult
 		out  int
 	}{
-		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{}, DiceResults{}, 0, false}, 0},
-		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{7}, DiceResults{}, 0, false}, 7},
-		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{1, 2, 3, 4, 5, 6, 7}, DiceResults{}, 0, false}, 28},
-		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{1, 2, 3, 4, 5, 6, 7}, DiceResults{1, 2, 3}, 0, false}, 28},
+		{simpleExpressionResult{SimpleExpression{}, Results{}, Results{}, 0, false}, 0},
+		{simpleExpressionResult{SimpleExpression{}, Results{7}, Results{}, 0, false}, 7},
+		{simpleExpressionResult{SimpleExpression{}, Results{1, 2, 3, 4, 5, 6, 7}, Results{}, 0, false}, 28},
+		{simpleExpressionResult{SimpleExpression{}, Results{1, 2, 3, 4, 5, 6, 7}, Results{1, 2, 3}, 0, false}, 28},
 	}
-	for i, sdert := range simpleDiceExpressionResultTests {
+	for i, sdert := range simpleExpressionResultTests {
 		sdert.sder.SumTotal()
 		if sdert.sder.total != sdert.out {
 			t.Errorf("%d) expression: %v expected  %d: got %d", i, sdert.sder, sdert.out, sdert.sder.total)
@@ -164,15 +164,15 @@ func TestSimpleDiceExpressionResultSumTotal(t *testing.T) {
 	}
 }
 
-// TestSimpleDiceExpressionResultExplodeDice test
-func TestSimpleDiceExpressionResultExplodeDice(t *testing.T) {
-	var simpleDiceExpressionResultTests = []simpleDiceExpressionResult{
-		simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 1}, DiceResults{1}, DiceResults{}, 0, false},
-		simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 4}, DiceResults{4, 3}, DiceResults{}, 0, false},
-		simpleDiceExpressionResult{SimpleDiceExpression{sides: 4, modifierValue: 4}, DiceResults{4, 3}, DiceResults{}, 0, false},
-		simpleDiceExpressionResult{SimpleDiceExpression{sides: 100, modifierValue: 96}, DiceResults{97, 3}, DiceResults{}, 0, false},
+// TestSimpleExpressionResultExplodeDice test
+func TestSimpleExpressionResultExplodeDice(t *testing.T) {
+	var simpleExpressionResultTests = []simpleExpressionResult{
+		simpleExpressionResult{SimpleExpression{sides: 6, modifierValue: 1}, Results{1}, Results{}, 0, false},
+		simpleExpressionResult{SimpleExpression{sides: 6, modifierValue: 4}, Results{4, 3}, Results{}, 0, false},
+		simpleExpressionResult{SimpleExpression{sides: 4, modifierValue: 4}, Results{4, 3}, Results{}, 0, false},
+		simpleExpressionResult{SimpleExpression{sides: 100, modifierValue: 96}, Results{97, 3}, Results{}, 0, false},
 	}
-	for i, sdert := range simpleDiceExpressionResultTests {
+	for i, sdert := range simpleExpressionResultTests {
 		dr := sdert.explodeDice()
 		if len(dr) <= 0 {
 			t.Errorf("%d) expression: len(dr) = %d should be greater than 0: ", i, len(dr))
@@ -197,126 +197,126 @@ func TestSimpleDiceExpressionResultExplodeDice(t *testing.T) {
 	}
 }
 
-// TestSimpleDiceExpressionResultOpen test
-func TestSimpleDiceExpressionResultOpen(t *testing.T) {
-	var simpleDiceExpressionResultTests = []struct {
-		sder simpleDiceExpressionResult
+// TestSimpleExpressionResultOpen test
+func TestSimpleExpressionResultOpen(t *testing.T) {
+	var simpleExpressionResultTests = []struct {
+		sder simpleExpressionResult
 		out  int
 	}{
-		{simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 6}, DiceResults{}, DiceResults{}, 0, false}, 0},
-		{simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 6}, DiceResults{1}, DiceResults{}, 0, false}, 0},
-		{simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 6}, DiceResults{6, 1}, DiceResults{}, 0, false}, 1},
-		{simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 6}, DiceResults{6, 6, 6, 6, 3, 3, 3, 3, 1}, DiceResults{}, 0, false}, 4},
+		{simpleExpressionResult{SimpleExpression{sides: 6, modifierValue: 6}, Results{}, Results{}, 0, false}, 0},
+		{simpleExpressionResult{SimpleExpression{sides: 6, modifierValue: 6}, Results{1}, Results{}, 0, false}, 0},
+		{simpleExpressionResult{SimpleExpression{sides: 6, modifierValue: 6}, Results{6, 1}, Results{}, 0, false}, 1},
+		{simpleExpressionResult{SimpleExpression{sides: 6, modifierValue: 6}, Results{6, 6, 6, 6, 3, 3, 3, 3, 1}, Results{}, 0, false}, 4},
 	}
-	for i, sdert := range simpleDiceExpressionResultTests {
+	for i, sdert := range simpleExpressionResultTests {
 		sdert.sder.Open()
-		if len(sdert.sder.extraDiceResults) < sdert.out {
-			t.Errorf("%d) expression: %v expected length %d: got %d", i, sdert.sder, sdert.out, len(sdert.sder.extraDiceResults))
+		if len(sdert.sder.extraResults) < sdert.out {
+			t.Errorf("%d) expression: %v expected length %d: got %d", i, sdert.sder, sdert.out, len(sdert.sder.extraResults))
 			continue
 		}
 		ok := true
-		for j, r := range sdert.sder.diceResults[:sdert.out] {
-			/*if sdert.sder.diceResults[j] != (sdert.sder.diceExpression.sides + r) {
-				t.Errorf("%d) diceResut[%d] expected to be %d: got %d -> expression: %v KO", i, j, sdert.sder.diceExpression.sides+r, sdert.sder.diceResults[j], sdert.sder)
+		for j, r := range sdert.sder.Results[:sdert.out] {
+			/*if sdert.sder.Results[j] != (sdert.sder.diceExpression.sides + r) {
+				t.Errorf("%d) diceResut[%d] expected to be %d: got %d -> expression: %v KO", i, j, sdert.sder.diceExpression.sides+r, sdert.sder.Results[j], sdert.sder)
 				ok = false
 				break
 			}*/
-			if sdert.sder.diceResults[j] <= sdert.sder.diceExpression.sides {
+			if sdert.sder.Results[j] <= sdert.sder.diceExpression.sides {
 				t.Errorf("%d) diceResuts[%d] expected to be greater than %d got %d -> expression: %v KO", i, j, sdert.sder.diceExpression.sides, r, sdert.sder)
 				ok = false
 				break
 			}
 		}
 		if ok {
-			t.Logf("%d) expression: %v Open %v: OK", i, sdert.sder, sdert.sder.extraDiceResults)
+			t.Logf("%d) expression: %v Open %v: OK", i, sdert.sder, sdert.sder.extraResults)
 		}
 	}
 }
 
-// TestSimpleDiceExpressionResultExplode test
-func TestSimpleDiceExpressionResultExplode(t *testing.T) {
-	var simpleDiceExpressionResultTests = []struct {
-		sder simpleDiceExpressionResult
+// TestSimpleExpressionResultExplode test
+func TestSimpleExpressionResultExplode(t *testing.T) {
+	var simpleExpressionResultTests = []struct {
+		sder simpleExpressionResult
 		out  int
 	}{
-		{simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 6}, DiceResults{}, DiceResults{}, 0, false}, 0},
-		{simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 6}, DiceResults{1}, DiceResults{}, 0, false}, 0},
-		{simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 6}, DiceResults{6, 1}, DiceResults{}, 0, false}, 1},
-		{simpleDiceExpressionResult{SimpleDiceExpression{sides: 4, modifierValue: 3}, DiceResults{4, 3, 2, 1}, DiceResults{}, 0, false}, 2},
-		{simpleDiceExpressionResult{SimpleDiceExpression{sides: 100, modifierValue: 96}, DiceResults{100, 96, 35, 1}, DiceResults{}, 0, false}, 2},
-		{simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 6}, DiceResults{6, 6, 6, 6, 3, 3, 3, 3, 1}, DiceResults{}, 0, false}, 4},
+		{simpleExpressionResult{SimpleExpression{sides: 6, modifierValue: 6}, Results{}, Results{}, 0, false}, 0},
+		{simpleExpressionResult{SimpleExpression{sides: 6, modifierValue: 6}, Results{1}, Results{}, 0, false}, 0},
+		{simpleExpressionResult{SimpleExpression{sides: 6, modifierValue: 6}, Results{6, 1}, Results{}, 0, false}, 1},
+		{simpleExpressionResult{SimpleExpression{sides: 4, modifierValue: 3}, Results{4, 3, 2, 1}, Results{}, 0, false}, 2},
+		{simpleExpressionResult{SimpleExpression{sides: 100, modifierValue: 96}, Results{100, 96, 35, 1}, Results{}, 0, false}, 2},
+		{simpleExpressionResult{SimpleExpression{sides: 6, modifierValue: 6}, Results{6, 6, 6, 6, 3, 3, 3, 3, 1}, Results{}, 0, false}, 4},
 	}
-	for i, sdert := range simpleDiceExpressionResultTests {
+	for i, sdert := range simpleExpressionResultTests {
 		sdert.sder.Explode()
-		if len(sdert.sder.extraDiceResults) < sdert.out {
-			t.Errorf("%d) expression: %v expected length %d: got %d", i, sdert.sder, sdert.out, len(sdert.sder.extraDiceResults))
+		if len(sdert.sder.extraResults) < sdert.out {
+			t.Errorf("%d) expression: %v expected length %d: got %d", i, sdert.sder, sdert.out, len(sdert.sder.extraResults))
 		} else {
-			t.Logf("%d) expression: %v Explode %v: OK", i, sdert.sder, sdert.sder.extraDiceResults)
+			t.Logf("%d) expression: %v Explode %v: OK", i, sdert.sder, sdert.sder.extraResults)
 		}
 	}
 }
 
-// TestSimpleDiceExpressionResultExplodingSuccess test
-func TestSimpleDiceExpressionResultExplodingSuccess(t *testing.T) {
-	var simpleDiceExpressionResultTests = []struct {
-		sder            simpleDiceExpressionResult
+// TestSimpleExpressionResultExplodingSuccess test
+func TestSimpleExpressionResultExplodingSuccess(t *testing.T) {
+	var simpleExpressionResultTests = []struct {
+		sder            simpleExpressionResult
 		minTotal        int
 		minExtraResults int
 	}{
-		{simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 6}, DiceResults{}, DiceResults{}, 0, false}, 0, 0},
-		{simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 6}, DiceResults{1}, DiceResults{}, 0, false}, 0, 0},
-		{simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 6}, DiceResults{6, 1}, DiceResults{}, 0, false}, 1, 1},
-		{simpleDiceExpressionResult{SimpleDiceExpression{sides: 4, modifierValue: 3}, DiceResults{4, 3, 2, 1}, DiceResults{}, 0, false}, 2, 1},
-		{simpleDiceExpressionResult{SimpleDiceExpression{sides: 100, modifierValue: 96}, DiceResults{100, 96, 35, 1}, DiceResults{}, 0, false}, 2, 1},
-		{simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 6}, DiceResults{6, 6, 6, 6, 3, 3, 3, 3, 1}, DiceResults{}, 0, false}, 4, 4},
+		{simpleExpressionResult{SimpleExpression{sides: 6, modifierValue: 6}, Results{}, Results{}, 0, false}, 0, 0},
+		{simpleExpressionResult{SimpleExpression{sides: 6, modifierValue: 6}, Results{1}, Results{}, 0, false}, 0, 0},
+		{simpleExpressionResult{SimpleExpression{sides: 6, modifierValue: 6}, Results{6, 1}, Results{}, 0, false}, 1, 1},
+		{simpleExpressionResult{SimpleExpression{sides: 4, modifierValue: 3}, Results{4, 3, 2, 1}, Results{}, 0, false}, 2, 1},
+		{simpleExpressionResult{SimpleExpression{sides: 100, modifierValue: 96}, Results{100, 96, 35, 1}, Results{}, 0, false}, 2, 1},
+		{simpleExpressionResult{SimpleExpression{sides: 6, modifierValue: 6}, Results{6, 6, 6, 6, 3, 3, 3, 3, 1}, Results{}, 0, false}, 4, 4},
 	}
-	for i, sdert := range simpleDiceExpressionResultTests {
+	for i, sdert := range simpleExpressionResultTests {
 		sdert.sder.ExplodingSuccess(sdert.sder.diceExpression.modifierValue)
-		if len(sdert.sder.extraDiceResults) < sdert.minExtraResults {
-			t.Errorf("%d) expression: %v expected length %d: got %d", i, sdert.sder, sdert.minExtraResults, len(sdert.sder.extraDiceResults))
+		if len(sdert.sder.extraResults) < sdert.minExtraResults {
+			t.Errorf("%d) expression: %v expected length %d: got %d", i, sdert.sder, sdert.minExtraResults, len(sdert.sder.extraResults))
 			continue
 		}
 		if sdert.sder.total < sdert.minTotal {
 			t.Errorf("%d) expression: %v expected min total of %d: got %d", i, sdert.sder, sdert.minTotal, sdert.sder.total)
 		} else {
-			t.Logf("%d) expression: %v ExplodingSuccess %v: OK", i, sdert.sder, sdert.sder.extraDiceResults)
+			t.Logf("%d) expression: %v ExplodingSuccess %v: OK", i, sdert.sder, sdert.sder.extraResults)
 		}
 	}
 }
 
-// TestSimpleDiceExpressionResultReroll test
-func TestSimpleDiceExpressionResultReroll(t *testing.T) {
-	var simpleDiceExpressionResultTests = []simpleDiceExpressionResult{
-		simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 6}, DiceResults{}, DiceResults{}, 0, false},
-		simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 6}, DiceResults{1}, DiceResults{}, 0, false},
-		simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 6}, DiceResults{6, 1}, DiceResults{}, 0, false},
-		simpleDiceExpressionResult{SimpleDiceExpression{sides: 4, modifierValue: 3}, DiceResults{4, 3, 2, 1}, DiceResults{}, 0, false},
-		simpleDiceExpressionResult{SimpleDiceExpression{sides: 100, modifierValue: 96}, DiceResults{100, 96, 35, 1}, DiceResults{}, 0, false},
-		simpleDiceExpressionResult{SimpleDiceExpression{sides: 6, modifierValue: 6}, DiceResults{6, 6, 6, 6, 3, 3, 3, 3, 1}, DiceResults{}, 0, false},
+// TestSimpleExpressionResultReroll test
+func TestSimpleExpressionResultReroll(t *testing.T) {
+	var simpleExpressionResultTests = []simpleExpressionResult{
+		simpleExpressionResult{SimpleExpression{sides: 6, modifierValue: 6}, Results{}, Results{}, 0, false},
+		simpleExpressionResult{SimpleExpression{sides: 6, modifierValue: 6}, Results{1}, Results{}, 0, false},
+		simpleExpressionResult{SimpleExpression{sides: 6, modifierValue: 6}, Results{6, 1}, Results{}, 0, false},
+		simpleExpressionResult{SimpleExpression{sides: 4, modifierValue: 3}, Results{4, 3, 2, 1}, Results{}, 0, false},
+		simpleExpressionResult{SimpleExpression{sides: 100, modifierValue: 96}, Results{100, 96, 35, 1}, Results{}, 0, false},
+		simpleExpressionResult{SimpleExpression{sides: 6, modifierValue: 6}, Results{6, 6, 6, 6, 3, 3, 3, 3, 1}, Results{}, 0, false},
 	}
-	for i, sdert := range simpleDiceExpressionResultTests {
+	for i, sdert := range simpleExpressionResultTests {
 		sdert.Reroll(sdert.diceExpression.modifierValue)
-		for _, r := range sdert.diceResults {
+		for _, r := range sdert.Results {
 			if r < sdert.diceExpression.modifierValue {
 				t.Errorf("%d) expression: %v expected min result %d: got %d KO", i, sdert, sdert.diceExpression.modifierValue, r)
 				break
 			}
 		}
-		t.Logf("%d) expression: %v Reroll %v: OK", i, sdert, sdert.extraDiceResults)
+		t.Logf("%d) expression: %v Reroll %v: OK", i, sdert, sdert.extraResults)
 	}
 }
 
-// TestSimpleDiceExpressionResultGetResults test
-func TestSimpleDiceExpressionResultGetResults(t *testing.T) {
-	var simpleDiceExpressionResultTests = []struct {
-		sder simpleDiceExpressionResult
-		out  DiceResults
+// TestSimpleExpressionResultGetResults test
+func TestSimpleExpressionResultGetResults(t *testing.T) {
+	var simpleExpressionResultTests = []struct {
+		sder simpleExpressionResult
+		out  Results
 	}{
-		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{7}, DiceResults{}, 0, false}, DiceResults{7}},
-		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{}, DiceResults{}, 0, false}, DiceResults{}},
-		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{1, 2, 3, 4, 5, 6, 7}, DiceResults{}, 0, false}, DiceResults{1, 2, 3, 4, 5, 6, 7}},
+		{simpleExpressionResult{SimpleExpression{}, Results{7}, Results{}, 0, false}, Results{7}},
+		{simpleExpressionResult{SimpleExpression{}, Results{}, Results{}, 0, false}, Results{}},
+		{simpleExpressionResult{SimpleExpression{}, Results{1, 2, 3, 4, 5, 6, 7}, Results{}, 0, false}, Results{1, 2, 3, 4, 5, 6, 7}},
 	}
-	for i, sdert := range simpleDiceExpressionResultTests {
+	for i, sdert := range simpleExpressionResultTests {
 		res := sdert.sder.GetResults()
 		if !assertEqualDiceReults(res, sdert.out) {
 			t.Errorf("%d) expression: %v expected results  %d: got %d", i, sdert.sder, sdert.out, res)
@@ -326,17 +326,17 @@ func TestSimpleDiceExpressionResultGetResults(t *testing.T) {
 	}
 }
 
-// TestSimpleDiceExpressionResultGetTotal test
-func TestSimpleDiceExpressionResultGetTotal(t *testing.T) {
-	var simpleDiceExpressionResultTests = []struct {
-		sder simpleDiceExpressionResult
+// TestSimpleExpressionResultGetTotal test
+func TestSimpleExpressionResultGetTotal(t *testing.T) {
+	var simpleExpressionResultTests = []struct {
+		sder simpleExpressionResult
 		out  int
 	}{
-		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{7}, DiceResults{}, 0, false}, 0},
-		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{}, DiceResults{}, 0, false}, 0},
-		{simpleDiceExpressionResult{SimpleDiceExpression{}, DiceResults{1, 2, 3, 4, 5, 6, 7}, DiceResults{}, 28, false}, 28},
+		{simpleExpressionResult{SimpleExpression{}, Results{7}, Results{}, 0, false}, 0},
+		{simpleExpressionResult{SimpleExpression{}, Results{}, Results{}, 0, false}, 0},
+		{simpleExpressionResult{SimpleExpression{}, Results{1, 2, 3, 4, 5, 6, 7}, Results{}, 28, false}, 28},
 	}
-	for i, sdert := range simpleDiceExpressionResultTests {
+	for i, sdert := range simpleExpressionResultTests {
 		res := sdert.sder.GetTotal()
 		if res != sdert.out {
 			t.Errorf("%d) expression: %v expected total %d: got %d", i, sdert.sder, sdert.out, res)

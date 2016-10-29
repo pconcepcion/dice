@@ -41,9 +41,9 @@ func init() {
 	log.SetLevel(log.DebugLevel)
 }
 
-// SimpleDiceExpression represents a dice expression with just one type of dice
+// SimpleExpression represents a dice expression with just one type of dice
 // dice expresions are based on the ones in RPtools ( http://lmwcs.com/rptools/wiki/Dice_Expressions )
-type SimpleDiceExpression struct {
+type SimpleExpression struct {
 	expressionText string       // Text that represents the dice expression
 	numDices       int          // number of dices
 	sides          int          // dice sides
@@ -52,9 +52,9 @@ type SimpleDiceExpression struct {
 	constant       int          // constant value
 }
 
-// Roller interface represents anthiing that can be "rolled" and generate a DiceExpressionResult
+// Roller interface represents anthiing that can be "rolled" and generate a ExpressionResult
 type Roller interface {
-	Roll() DiceExpressionResult
+	Roll() ExpressionResult
 }
 
 // extractTokenValue extracts from the received Token the value and converts it to to an int
@@ -68,14 +68,14 @@ func extractTokenValue(tok Token) int {
 	return intValue
 }
 
-// NewSimpleDiceExpression creates a new SimpleDiceExpresion initialized expressionText received but
-// doesn't parse the expression SimpleDiceExpression.parse() should be called to parse the expression
-func NewSimpleDiceExpression(expression string) SimpleDiceExpression {
-	return SimpleDiceExpression{expressionText: expression}
+// NewSimpleExpression creates a new SimpleExpression initialized expressionText received but
+// doesn't parse the expression SimpleExpression.parse() should be called to parse the expression
+func NewSimpleExpression(expression string) SimpleExpression {
+	return SimpleExpression{expressionText: expression}
 }
 
 // handleNextTokenNumber handles the state when the next token is a tokenNumber
-func (sde *SimpleDiceExpression) handleNextTokenNumber(tok, nextToken Token) {
+func (sde *SimpleExpression) handleNextTokenNumber(tok, nextToken Token) {
 	switch tok.val {
 	case "k":
 		sde.handleExtraTokenModifier(nextToken, keep)
@@ -97,13 +97,13 @@ func (sde *SimpleDiceExpression) handleNextTokenNumber(tok, nextToken Token) {
 
 // handleExtraTokenModifier handles a modifier that requires a numeric extra token, stores the
 // modifier on sde and the extra token value on sde.modifierValue
-func (sde *SimpleDiceExpression) handleExtraTokenModifier(nextToken Token, modifier diceModifier) {
+func (sde *SimpleExpression) handleExtraTokenModifier(nextToken Token, modifier diceModifier) {
 	sde.modifierValue = extractTokenValue(nextToken)
 	sde.modifier = modifier
 }
 
 // handleNextTokenEOF handles the state when the next token is a tokenEOF
-func (sde *SimpleDiceExpression) handleNextTokenEOF(tok, nextToken Token) {
+func (sde *SimpleExpression) handleNextTokenEOF(tok, nextToken Token) {
 	switch tok.val {
 	case "e":
 		sde.modifier = explode
@@ -115,7 +115,7 @@ func (sde *SimpleDiceExpression) handleNextTokenEOF(tok, nextToken Token) {
 }
 
 // handleTokenMoffier handles the Modifier optional extra number
-func (sde *SimpleDiceExpression) handleTokenModifier(tok, nextToken Token) {
+func (sde *SimpleExpression) handleTokenModifier(tok, nextToken Token) {
 	switch nextToken.typ {
 	case tokenNumber:
 		sde.handleNextTokenNumber(tok, nextToken)
@@ -128,7 +128,7 @@ func (sde *SimpleDiceExpression) handleTokenModifier(tok, nextToken Token) {
 }
 
 // handlelTokenNumber handles the second or third tokenNumber
-func (sde *SimpleDiceExpression) handleTokenNumber(tok, nextToken Token) {
+func (sde *SimpleExpression) handleTokenNumber(tok, nextToken Token) {
 	switch nextToken.typ {
 	case tokenDice:
 		log.Panicln("Unexpected modifier")
@@ -144,7 +144,7 @@ func (sde *SimpleDiceExpression) handleTokenNumber(tok, nextToken Token) {
 }
 
 // handleInitialTokenNumber handles the first token when it's a number
-func (sde *SimpleDiceExpression) handleInitialTokenNumber(tok, nextToken Token) {
+func (sde *SimpleExpression) handleInitialTokenNumber(tok, nextToken Token) {
 	switch nextToken.typ {
 	case tokenEOF:
 		sde.constant = extractTokenValue(tok)
@@ -156,7 +156,7 @@ func (sde *SimpleDiceExpression) handleInitialTokenNumber(tok, nextToken Token) 
 /**
  * Parse a simple dice expresion and save the relevant information on the struct
  */
-func (sde *SimpleDiceExpression) parse() error {
+func (sde *SimpleExpression) parse() error {
 	firstToken := true
 	sde.expressionText = strings.TrimSpace(sde.expressionText)
 	_, tokensChannel := lex(sde.expressionText)
@@ -185,23 +185,23 @@ func (sde *SimpleDiceExpression) parse() error {
 }
 
 //Roll the expression and return the reslut or an error
-func (sde *SimpleDiceExpression) Roll() (DiceExpressionResult, error) {
+func (sde *SimpleExpression) Roll() (ExpressionResult, error) {
 	if err := sde.parse(); err != nil {
 		return nil, errors.Wrap(err, "Parsing error")
 	}
 	if sde.numDices == 0 || sde.sides == 0 {
-		return &simpleDiceExpressionResult{diceExpression: *sde, total: 0}, nil
+		return &simpleExpressionResult{diceExpression: *sde, total: 0}, nil
 	}
 
-	result := &simpleDiceExpressionResult{diceExpression: *sde, diceResults: make([]int, sde.numDices)}
+	result := &simpleExpressionResult{diceExpression: *sde, Results: make([]int, sde.numDices)}
 	d := NewDice(sde.sides)
 	for i := 0; i < sde.numDices; i++ {
-		result.diceResults[i] = d.Roll()
+		result.Results[i] = d.Roll()
 	}
 	log.WithFields(log.Fields{"result.diceExpresion": result.diceExpression}).Debug("Dice Expression")
-	log.WithFields(log.Fields{"result.diceResults": result.diceResults}).Info("Dices rolled")
-	sort.Sort(sort.Reverse(result.diceResults))
-	log.WithFields(log.Fields{"result.diceResults": result.diceResults}).Debug("Sorted")
+	log.WithFields(log.Fields{"result.Results": result.Results}).Info("Dices rolled")
+	sort.Sort(sort.Reverse(result.Results))
+	log.WithFields(log.Fields{"result.Results": result.Results}).Debug("Sorted")
 	result.handleModifier(sde)
 	result.total += sde.constant
 	log.Infoln("total: ", result.total)

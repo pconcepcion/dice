@@ -11,22 +11,22 @@ import (
 // ExplodingMaxDices is the maximum number of explosions of a dice
 const ExplodingMaxDices = 100
 
-// DiceResults is an array of ints to hold the dice results
-type DiceResults []int
+// Results is an array of ints to hold the dice results
+type Results []int
 
 // Implement the Sort interfaace
 
 // Len gives the length of the Dice results
-func (dr DiceResults) Len() int { return len(dr) }
+func (dr Results) Len() int { return len(dr) }
 
 // Swap swaps the positions of two elements from the Dice Results
-func (dr DiceResults) Swap(i, j int) { dr[i], dr[j] = dr[j], dr[i] }
+func (dr Results) Swap(i, j int) { dr[i], dr[j] = dr[j], dr[i] }
 
 // Less returns true if the ith element is less than the jth
-func (dr DiceResults) Less(i, j int) bool { return dr[i] < dr[j] }
+func (dr Results) Less(i, j int) bool { return dr[i] < dr[j] }
 
-// Sum sums the values in a DiceResults slice
-func (dr DiceResults) Sum() int {
+// Sum sums the values in a Results slice
+func (dr Results) Sum() int {
 	sum := 0
 	for i := 0; i < len(dr); i++ {
 		sum += dr[i]
@@ -34,60 +34,60 @@ func (dr DiceResults) Sum() int {
 	return sum
 }
 
-// DiceExpressionResult is an interfaace that represents the result of rolling some kind of dice expression
-type DiceExpressionResult interface {
+// ExpressionResult is an interfaace that represents the result of rolling some kind of dice expression
+type ExpressionResult interface {
 	fmt.Stringer
-	GetResults() DiceResults
+	GetResults() Results
 	GetTotal() int
 }
 
-type simpleDiceExpressionResult struct {
-	diceExpression   SimpleDiceExpression
-	diceResults      DiceResults
-	extraDiceResults DiceResults
-	total            int
-	verbose          bool
+type simpleExpressionResult struct {
+	diceExpression SimpleExpression
+	Results        Results
+	extraResults   Results
+	total          int
+	verbose        bool
 }
 
 // handleModifier does all the magic and applies the modifier corresponding to the received
-// SimpleDiceExpression to the result
-func (sder *simpleDiceExpressionResult) handleModifier(sde *SimpleDiceExpression) {
+// SimpleExpression to the result
+func (sder *simpleExpressionResult) handleModifier(sde *SimpleExpression) {
 	switch sde.modifier {
 	case keep:
-		sder.diceResults = sder.diceResults[:sde.modifierValue]
-		log.WithFields(log.Fields{"sder.diceResults": sder.diceResults}).Debug("Keep")
+		sder.Results = sder.Results[:sde.modifierValue]
+		log.WithFields(log.Fields{"sder.Results": sder.Results}).Debug("Keep")
 		sder.SumTotal()
 	case keepLower:
 		// TODO: solve this wihout so much sorting...
-		sort.Sort(sder.diceResults)
-		sder.diceResults = sder.diceResults[:sde.modifierValue]
-		sort.Sort(sort.Reverse(sder.diceResults))
-		log.WithFields(log.Fields{"sder.diceResults": sder.diceResults}).Debug("Keep Lower")
+		sort.Sort(sder.Results)
+		sder.Results = sder.Results[:sde.modifierValue]
+		sort.Sort(sort.Reverse(sder.Results))
+		log.WithFields(log.Fields{"sder.Results": sder.Results}).Debug("Keep Lower")
 		sder.SumTotal()
 	case success:
 		sder.Success(sde.modifierValue)
 	case explodingSuccess:
 		sder.ExplodingSuccess(sde.modifierValue)
-		log.WithFields(log.Fields{"sder.diceResults": sder.diceResults,
-			"sder.extrDiceResults": sder.extraDiceResults}).Debug("Exploding Success")
+		log.WithFields(log.Fields{"sder.Results": sder.Results,
+			"sder.extrResults": sder.extraResults}).Debug("Exploding Success")
 	case explode:
 		sder.Explode()
-		log.WithFields(log.Fields{"sder.diceResults": sder.diceResults,
-			"sder.extrDiceResults": sder.extraDiceResults}).Debug("Explode")
+		log.WithFields(log.Fields{"sder.Results": sder.Results,
+			"sder.extrResults": sder.extraResults}).Debug("Explode")
 		sder.SumTotal()
 	case open:
 		sder.Open()
-		log.WithFields(log.Fields{"sder.diceResults": sder.diceResults,
-			"sder.extrDiceResults": sder.extraDiceResults}).Debug("Open")
-		sort.Sort(sort.Reverse(sder.diceResults))
-		sder.total += sder.diceResults[0]
+		log.WithFields(log.Fields{"sder.Results": sder.Results,
+			"sder.extrResults": sder.extraResults}).Debug("Open")
+		sort.Sort(sort.Reverse(sder.Results))
+		sder.total += sder.Results[0]
 	case reroll:
 		sder.Reroll(sde.modifierValue)
-		sort.Sort(sort.Reverse(sder.diceResults))
-		log.WithFields(log.Fields{"sder.diceResults": sder.diceResults}).Debug("Reroll")
+		sort.Sort(sort.Reverse(sder.Results))
+		log.WithFields(log.Fields{"sder.Results": sder.Results}).Debug("Reroll")
 	case drop:
-		sder.diceResults = sder.diceResults[:(sde.numDices - sde.modifierValue)]
-		log.WithFields(log.Fields{"sder.diceResults": sder.diceResults}).Debug("Drop")
+		sder.Results = sder.Results[:(sde.numDices - sde.modifierValue)]
+		log.WithFields(log.Fields{"sder.Results": sder.Results}).Debug("Drop")
 		sder.SumTotal()
 	default:
 		sder.SumTotal()
@@ -95,23 +95,23 @@ func (sder *simpleDiceExpressionResult) handleModifier(sde *SimpleDiceExpression
 }
 
 // Success counts the number of results with a value mayor or equal to the target value and stores the result in the total
-func (sder *simpleDiceExpressionResult) Success(targetValue int) {
+func (sder *simpleExpressionResult) Success(targetValue int) {
 	sder.total = 0
-	for _, dr := range sder.diceResults {
+	for _, dr := range sder.Results {
 		if dr >= targetValue {
 			sder.total++
 		}
 	}
 }
 
-// SumTotal sums the values on the diceResults into the total field
-func (sder *simpleDiceExpressionResult) SumTotal() {
-	sder.total = sder.diceResults.Sum()
+// SumTotal sums the values on the Results into the total field
+func (sder *simpleExpressionResult) SumTotal() {
+	sder.total = sder.Results.Sum()
 }
 
 // TODO: Adde example to the documentation
 // explodeDice explodes the result of one dice rolling and adding a dice to the results while the result is the same than the number of sides
-func (sder *simpleDiceExpressionResult) explodeDice() DiceResults {
+func (sder *simpleExpressionResult) explodeDice() Results {
 	numSides := sder.diceExpression.sides
 	threshold := sder.diceExpression.modifierValue
 	d := NewDice(numSides)
@@ -139,82 +139,82 @@ func (sder *simpleDiceExpressionResult) explodeDice() DiceResults {
 
 // Open rolls all the dices and explodes them and sets the total as the maximum of the results
 // the new roll is still equal to the nubmer of sides
-func (sder *simpleDiceExpressionResult) Open() {
+func (sder *simpleExpressionResult) Open() {
 	numSides := sder.diceExpression.sides
-	for i, res := range sder.diceResults {
+	for i, res := range sder.Results {
 		if res == numSides {
 			results := sder.explodeDice()
-			sder.extraDiceResults = append(sder.extraDiceResults, results...)
-			sder.diceResults[i] = results.Sum() + res
+			sder.extraResults = append(sder.extraResults, results...)
+			sder.Results[i] = results.Sum() + res
 		}
 	}
 }
 
 // Explode rolls one extra dice for each reult that it's equal to the number of sides, and keeps doing it if the result of
 // the new roll is still equal to the nubmer of sides
-func (sder *simpleDiceExpressionResult) Explode() {
-	for _, res := range sder.diceResults {
+func (sder *simpleExpressionResult) Explode() {
+	for _, res := range sder.Results {
 		if res >= sder.diceExpression.modifierValue {
 			results := sder.explodeDice()
-			sder.extraDiceResults = append(sder.extraDiceResults, results...)
+			sder.extraResults = append(sder.extraResults, results...)
 		}
 	}
-	sder.diceResults = append(sder.diceResults, sder.extraDiceResults...)
+	sder.Results = append(sder.Results, sder.extraResults...)
 }
 
 // Success but with exploding Dices
-func (sder *simpleDiceExpressionResult) ExplodingSuccess(targetValue int) {
+func (sder *simpleExpressionResult) ExplodingSuccess(targetValue int) {
 	sder.total = 0
 	numSides := sder.diceExpression.sides
-	for i, res := range sder.diceResults {
+	for i, res := range sder.Results {
 		if res == numSides {
 			results := sder.explodeDice()
-			sder.extraDiceResults = append(sder.extraDiceResults, results...)
-			sder.diceResults[i] = results.Sum() + res
+			sder.extraResults = append(sder.extraResults, results...)
+			sder.Results[i] = results.Sum() + res
 		}
-		if sder.diceResults[i] >= targetValue {
+		if sder.Results[i] >= targetValue {
 			sder.total++
 		}
 	}
 }
 
 // Reroll rerrols the dices with a result smaller than minValue until obtaining something biger or equal than minValue
-func (sder *simpleDiceExpressionResult) Reroll(minValue int) {
+func (sder *simpleExpressionResult) Reroll(minValue int) {
 	numSides := sder.diceExpression.sides
 	d := NewDice(numSides)
 	sder.total = 0
 	// We can't reroll and get more dices than whe have thrown
 	if minValue >= numSides {
-		for i := range sder.diceResults {
-			sder.diceResults[i] = minValue
+		for i := range sder.Results {
+			sder.Results[i] = minValue
 			sder.total += minValue
 		}
 	} else {
-		for i := range sder.diceResults {
+		for i := range sder.Results {
 			// while the value of the result is lower reroll the dice
-			for sder.diceResults[i] < minValue {
-				sder.diceResults[i] = d.Roll()
+			for sder.Results[i] < minValue {
+				sder.Results[i] = d.Roll()
 			}
-			sder.total += sder.diceResults[i]
+			sder.total += sder.Results[i]
 		}
 	}
 
 }
 
-// String returns a string representing the simpleDiceExpressionResult, if verbose is true  it will print more info.
-func (sder *simpleDiceExpressionResult) String() string {
+// String returns a string representing the simpleExpressionResult, if verbose is true  it will print more info.
+func (sder *simpleExpressionResult) String() string {
 	if sder.verbose {
-		return fmt.Sprintf("%s : %v -> %d", sder.diceExpression.expressionText, sder.diceResults, sder.total)
+		return fmt.Sprintf("%s : %v -> %d", sder.diceExpression.expressionText, sder.Results, sder.total)
 	}
 	return fmt.Sprintf("%d", sder.total)
 }
 
-// GetResults return the DiceResults
-func (sder *simpleDiceExpressionResult) GetResults() DiceResults {
-	return sder.diceResults
+// GetResults return the Results
+func (sder *simpleExpressionResult) GetResults() Results {
+	return sder.Results
 }
 
 // GetResults return the total
-func (sder *simpleDiceExpressionResult) GetTotal() int {
+func (sder *simpleExpressionResult) GetTotal() int {
 	return sder.total
 }
