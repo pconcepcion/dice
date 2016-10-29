@@ -1,5 +1,5 @@
-// Package rpg provides tools to develop rpg games package rpg
-package rpg
+// Package dice provides tools to develop rpg games package rpg
+package dice
 
 import (
 	"fmt"

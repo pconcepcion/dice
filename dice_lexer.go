@@ -3,7 +3,7 @@
 // parser to get them
 // [1]:  https://www.youtube.com/watch?v=HxaD_trXwRE
 
-package rpg
+package dice
 
 import (
 	"fmt"
