@@ -3,8 +3,9 @@ package dice
 
 import (
 	"fmt"
-	"github.com/Sirupsen/logrus"
 	"sort"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 // ExplodingMaxDices is the maximum number of explosions of a dice
@@ -54,39 +55,39 @@ func (sder *simpleDiceExpressionResult) handleModifier(sde *SimpleDiceExpression
 	switch sde.modifier {
 	case keep:
 		sder.diceResults = sder.diceResults[:sde.modifierValue]
-		log.WithFields(logrus.Fields{"sder.diceResults": sder.diceResults}).Debug("Keep")
+		log.WithFields(log.Fields{"sder.diceResults": sder.diceResults}).Debug("Keep")
 		sder.SumTotal()
 	case keepLower:
 		// TODO: solve this wihout so much sorting...
 		sort.Sort(sder.diceResults)
 		sder.diceResults = sder.diceResults[:sde.modifierValue]
 		sort.Sort(sort.Reverse(sder.diceResults))
-		log.WithFields(logrus.Fields{"sder.diceResults": sder.diceResults}).Debug("Keep Lower")
+		log.WithFields(log.Fields{"sder.diceResults": sder.diceResults}).Debug("Keep Lower")
 		sder.SumTotal()
 	case success:
 		sder.Success(sde.modifierValue)
 	case explodingSuccess:
 		sder.ExplodingSuccess(sde.modifierValue)
-		log.WithFields(logrus.Fields{"sder.diceResults": sder.diceResults,
+		log.WithFields(log.Fields{"sder.diceResults": sder.diceResults,
 			"sder.extrDiceResults": sder.extraDiceResults}).Debug("Exploding Success")
 	case explode:
 		sder.Explode()
-		log.WithFields(logrus.Fields{"sder.diceResults": sder.diceResults,
+		log.WithFields(log.Fields{"sder.diceResults": sder.diceResults,
 			"sder.extrDiceResults": sder.extraDiceResults}).Debug("Explode")
 		sder.SumTotal()
 	case open:
 		sder.Open()
-		log.WithFields(logrus.Fields{"sder.diceResults": sder.diceResults,
+		log.WithFields(log.Fields{"sder.diceResults": sder.diceResults,
 			"sder.extrDiceResults": sder.extraDiceResults}).Debug("Open")
 		sort.Sort(sort.Reverse(sder.diceResults))
 		sder.total += sder.diceResults[0]
 	case reroll:
 		sder.Reroll(sde.modifierValue)
 		sort.Sort(sort.Reverse(sder.diceResults))
-		log.WithFields(logrus.Fields{"sder.diceResults": sder.diceResults}).Debug("Reroll")
+		log.WithFields(log.Fields{"sder.diceResults": sder.diceResults}).Debug("Reroll")
 	case drop:
 		sder.diceResults = sder.diceResults[:(sde.numDices - sde.modifierValue)]
-		log.WithFields(logrus.Fields{"sder.diceResults": sder.diceResults}).Debug("Drop")
+		log.WithFields(log.Fields{"sder.diceResults": sder.diceResults}).Debug("Drop")
 		sder.SumTotal()
 	default:
 		sder.SumTotal()

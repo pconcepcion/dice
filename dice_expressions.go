@@ -2,12 +2,13 @@
 package dice
 
 import (
-	"github.com/Sirupsen/logrus"
-	"github.com/pkg/errors"
-	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 	"sort"
 	"strconv"
 	"strings"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/pkg/errors"
+	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 )
 
 type diceModifier int
@@ -33,12 +34,11 @@ const (
 	drop
 )
 
-var log = logrus.New()
+// var log = logrus.New()
 
 func init() {
-	log.Formatter = new(prefixed.TextFormatter)
-	log.Level = logrus.DebugLevel
-
+	log.SetFormatter(new(prefixed.TextFormatter))
+	log.SetLevel(log.DebugLevel)
 }
 
 // SimpleDiceExpression represents a dice expression with just one type of dice
@@ -198,10 +198,10 @@ func (sde *SimpleDiceExpression) Roll() (DiceExpressionResult, error) {
 	for i := 0; i < sde.numDices; i++ {
 		result.diceResults[i] = d.Roll()
 	}
-	log.WithFields(logrus.Fields{"result.diceExpresion": result.diceExpression}).Debug("Dice Expression")
-	log.WithFields(logrus.Fields{"result.diceResults": result.diceResults}).Info("Dices rolled")
+	log.WithFields(log.Fields{"result.diceExpresion": result.diceExpression}).Debug("Dice Expression")
+	log.WithFields(log.Fields{"result.diceResults": result.diceResults}).Info("Dices rolled")
 	sort.Sort(sort.Reverse(result.diceResults))
-	log.WithFields(logrus.Fields{"result.diceResults": result.diceResults}).Debug("Sorted")
+	log.WithFields(log.Fields{"result.diceResults": result.diceResults}).Debug("Sorted")
 	result.handleModifier(sde)
 	result.total += sde.constant
 	log.Infoln("total: ", result.total)
