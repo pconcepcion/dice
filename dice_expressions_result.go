@@ -54,10 +54,19 @@ type simpleExpressionResult struct {
 func (sder *simpleExpressionResult) handleModifier(sde *SimpleExpression) {
 	switch sde.modifier {
 	case keep:
+		// TODO: This may be extacted to a function
+		if sde.modifierValue > len(sder.Results) {
+			log.Warnln("Trying to keep more dices than rolled dices")
+			sde.modifierValue = len(sder.Results)
+		}
 		sder.Results = sder.Results[:sde.modifierValue]
 		log.WithFields(log.Fields{"sder.Results": sder.Results}).Debug("Keep")
 		sder.SumTotal()
 	case keepLower:
+		if sde.modifierValue > len(sder.Results) {
+			log.Warnln("Trying to keep more dices than rolled dices")
+			sde.modifierValue = len(sder.Results)
+		}
 		// TODO: solve this wihout so much sorting...
 		sort.Sort(sder.Results)
 		sder.Results = sder.Results[:sde.modifierValue]

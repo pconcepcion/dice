@@ -38,7 +38,8 @@ const (
 
 func init() {
 	log.SetFormatter(new(prefixed.TextFormatter))
-	log.SetLevel(log.DebugLevel)
+	//log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.WarnLevel)
 }
 
 // SimpleExpression represents a dice expression with just one type of dice
@@ -184,7 +185,7 @@ func (sde *SimpleExpression) parse() error {
 	return nil
 }
 
-//Roll the expression and return the reslut or an error
+//Roll the expression and return the result or an error
 func (sde *SimpleExpression) Roll() (ExpressionResult, error) {
 	if err := sde.parse(); err != nil {
 		return nil, errors.Wrap(err, "Parsing error")
