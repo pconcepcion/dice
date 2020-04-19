@@ -75,6 +75,16 @@ func NewSimpleExpression(expression string) SimpleExpression {
 	return SimpleExpression{expressionText: expression}
 }
 
+// NewParsedSimpleExpression creates a new SimpleExpression initialized expressionText received and
+// parses the expression returning an error if the parse fails
+func NewParsedSimpleExpression(expression string) (*SimpleExpression, error) {
+	sde := SimpleExpression{expressionText: expression}
+	if err := sde.parse(); err != nil {
+		return nil, errors.Wrap(err, "Parsing error")
+	}
+	return &sde, nil
+}
+
 // handleNextTokenNumber handles the state when the next token is a tokenNumber
 func (sde *SimpleExpression) handleNextTokenNumber(tok, nextToken Token) {
 	switch tok.val {
@@ -190,8 +200,14 @@ func (sde *SimpleExpression) Roll() (ExpressionResult, error) {
 	if err := sde.parse(); err != nil {
 		return nil, errors.Wrap(err, "Parsing error")
 	}
+	result := sde.RollPreParsed()
+	return result, nil
+}
+
+//RollPreParsed rolls an already parsed expression and return the result
+func (sde *SimpleExpression) RollPreParsed() ExpressionResult {
 	if sde.numDices == 0 || sde.sides == 0 {
-		return &simpleExpressionResult{diceExpression: *sde, total: 0}, nil
+		return &simpleExpressionResult{diceExpression: *sde, total: 0}
 	}
 
 	result := &simpleExpressionResult{diceExpression: *sde, Results: make([]int, sde.numDices)}
@@ -207,5 +223,5 @@ func (sde *SimpleExpression) Roll() (ExpressionResult, error) {
 	result.total += sde.constant
 	log.Infoln("total: ", result.total)
 
-	return result, nil
+	return result
 }
