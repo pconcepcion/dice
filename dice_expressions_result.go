@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sort"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // ExplodingMaxDices is the maximum number of explosions of a dice
