@@ -6,3 +6,8 @@ dice
 cmd/dice_20161029
 dicemodifier_string.go
 tokentype_string.go
+
+# Go-fuzz 
+go-fuzz-workdir/*
+dice-fuzz.zip
+
