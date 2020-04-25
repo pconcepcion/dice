@@ -16,8 +16,17 @@ lint:
 	#gocyclo -over 10 .
 	errcheck ./...
 
+fuzz: fuzz-build
+	@echo "running go-fuzz, Ctr-C to stop it, next run will start from where it was if the workdir is still intact"
+	go-fuzz -bin=dice-fuzz.zip -workdir=go-fuzz-workdir
+
+fuzz-build: 
+	@echo "Building go-fuzz-build..."
+	go-fuzz-build github.com/pconcepcion/dice
+
 clean:
 	go clean
+	rm -f dice-fuzz.zip
 
 deps: dev-deps
 
@@ -25,3 +34,4 @@ dev-deps:
 	# go get github.com/golang/lint/golint
 	go get -u golang.org/x/lint/golint
 	go get github.com/kisielk/errcheck
+	go get -u github.com/dvyukov/go-fuzz/go-fuzz github.com/dvyukov/go-fuzz-build
