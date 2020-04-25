@@ -5,8 +5,8 @@ import (
 	"os"
 	"regexp"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/pconcepcion/dice"
+	log "github.com/sirupsen/logrus"
 )
 
 // TODO: do proper validation
