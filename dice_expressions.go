@@ -21,6 +21,9 @@ const (
 	modifierExpression
 )
 
+// MaxExpressionLength represents the maximum length of the string representing a DiceExpression
+const MaxExpressionLength = 64
+
 //go:generate stringer -type=diceModifier
 const (
 	normal diceModifier = iota
@@ -32,6 +35,12 @@ const (
 	explode
 	open
 	drop
+)
+
+var (
+	// ExpressionTooLong is the error thrown when the string repressenting the expression is longer than
+	// MaxExpressionLength
+	ExpressionTooLong = errors.New("Expression Too Long")
 )
 
 // var log = logrus.New()
@@ -78,6 +87,9 @@ func NewSimpleExpression(expression string) SimpleExpression {
 // NewParsedSimpleExpression creates a new SimpleExpression initialized expressionText received and
 // parses the expression returning an error if the parse fails
 func NewParsedSimpleExpression(expression string) (*SimpleExpression, error) {
+	if len(expression) > MaxExpressionLength {
+		return nil, ExpressionTooLong
+	}
 	sde := SimpleExpression{expressionText: expression}
 	if err := sde.parse(); err != nil {
 		return nil, errors.Wrap(err, "Parsing error")
@@ -170,6 +182,9 @@ func (sde *SimpleExpression) handleInitialTokenNumber(tok, nextToken Token) {
 func (sde *SimpleExpression) parse() error {
 	firstToken := true
 	sde.expressionText = strings.TrimSpace(sde.expressionText)
+	if len(sde.expressionText) > MaxExpressionLength {
+		return ExpressionTooLong
+	}
 	_, tokensChannel := lex(sde.expressionText)
 	for tok := range tokensChannel {
 		switch tok.typ {
