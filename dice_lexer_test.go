@@ -109,37 +109,9 @@ func TestLexer(t *testing.T) {
 	}
 }
 
-// Test for the isWhitespace function
-func TestIsWhitespace(t *testing.T) {
-	var testStrings = []struct {
-		s rune
-		b bool
-	}{
-		{' ', true},
-		{'\t', true},
-		{'\n', true},
-		{'a', false},
-		{'ä', false},
-		{'0', false},
-		{'9', false},
-		{'本', false},
-		{'\000', false},
-		{'\007', false},
-		{'\377', false},
-		{'\x07', false},
-		{'\xff', false},
-		{'\u12e4', false},
-		{'\U00101234', false},
-	}
-	var testResult bool
 
-	for _, lts := range testStrings {
-		testResult = isWhitespace(lts.s)
-		if testResult != lts.b {
-			t.Error("Expected value: ", lts.b, " obtaned: ", testResult)
-		}
-	}
-}
+
+
 
 // TestFuzzStrings test strings that have been found to crash the library by `go-fuzz`
 func TestFuzzStrings(t *testing.T) {
