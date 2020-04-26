@@ -10,6 +10,8 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Token type identifier
@@ -39,9 +41,12 @@ const (
 // eof represnets the end of file
 var eof = rune(0)
 
-// digits represent the valid digits
-const digits = "0123456789"
-const nonZeroDigits = "123456789"
+const (
+	// digits represent the valid digits
+	digits = "0123456789"
+	// nonZeroDigits represent the valid digits except 0
+	nonZeroDigits = "123456789"
+)
 
 // Token represents a token of the lexer, and has a type and a value (a string)
 type Token struct {
@@ -101,6 +106,7 @@ func lex(input string) (*lexer, chan Token) {
 // emit passes a Token back to the client trough the channel and updates
 // the lexer start position to be used with the next Token
 func (l *lexer) emit(t tokenType) {
+	log.Debug("Emit token: ", t, "(", l.input[l.start:l.pos], ")")
 	l.tokens <- Token{t, l.input[l.start:l.pos]}
 	l.start = l.pos
 }

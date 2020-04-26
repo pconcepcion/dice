@@ -8,7 +8,6 @@ import (
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 )
 
 type diceModifier int
@@ -38,17 +37,17 @@ const (
 )
 
 var (
-	// ExpressionTooLong is the error thrown when the string repressenting the expression is longer than
+	// ErrExpressionTooLong is the error thrown when the string repressenting the expression is longer than
 	// MaxExpressionLength
-	ExpressionTooLong = errors.New("Expression Too Long")
+	ErrExpressionTooLong = errors.New("Expression Too Long")
 )
 
 // var log = logrus.New()
 
 func init() {
-	log.SetFormatter(new(prefixed.TextFormatter))
-	//log.SetLevel(log.DebugLevel)
-	log.SetLevel(log.WarnLevel)
+	log.SetFormatter(&log.TextFormatter{DisableLevelTruncation: true, FullTimestamp: true, PadLevelText: true})
+	log.SetLevel(log.DebugLevel)
+	//log.SetLevel(log.WarnLevel)
 }
 
 // SimpleExpression represents a dice expression with just one type of dice
@@ -88,7 +87,7 @@ func NewSimpleExpression(expression string) SimpleExpression {
 // parses the expression returning an error if the parse fails
 func NewParsedSimpleExpression(expression string) (*SimpleExpression, error) {
 	if len(expression) > MaxExpressionLength {
-		return nil, ExpressionTooLong
+		return nil, ErrExpressionTooLong
 	}
 	sde := SimpleExpression{expressionText: expression}
 	if err := sde.parse(); err != nil {
@@ -99,6 +98,8 @@ func NewParsedSimpleExpression(expression string) (*SimpleExpression, error) {
 
 // handleNextTokenNumber handles the state when the next token is a tokenNumber
 func (sde *SimpleExpression) handleNextTokenNumber(tok, nextToken Token) {
+	log.Debug("sde.modifier: ", sde.modifier, ", sde.modifierValue: ", sde.modifierValue,
+		", tok: ", tok, ", nextToken: ", nextToken)
 	switch tok.val {
 	case "k":
 		sde.handleExtraTokenModifier(nextToken, keep)
@@ -121,12 +122,16 @@ func (sde *SimpleExpression) handleNextTokenNumber(tok, nextToken Token) {
 // handleExtraTokenModifier handles a modifier that requires a numeric extra token, stores the
 // modifier on sde and the extra token value on sde.modifierValue
 func (sde *SimpleExpression) handleExtraTokenModifier(nextToken Token, modifier diceModifier) {
+	log.Debug("sde.modifier: ", sde.modifier, ", sde.modifierValue: ", sde.modifierValue,
+		", newModifier: ", modifier, ", nextToken: ", nextToken)
 	sde.modifierValue = extractTokenValue(nextToken)
 	sde.modifier = modifier
 }
 
 // handleNextTokenEOF handles the state when the next token is a tokenEOF
 func (sde *SimpleExpression) handleNextTokenEOF(tok, nextToken Token) {
+	log.Debug("sde.modifier: ", sde.modifier, ", sde.modifierValue: ", sde.modifierValue,
+		", tok: ", tok, ", nextToken: ", nextToken)
 	switch tok.val {
 	case "e":
 		sde.modifier = explode
@@ -139,6 +144,8 @@ func (sde *SimpleExpression) handleNextTokenEOF(tok, nextToken Token) {
 
 // handleTokenMoffier handles the Modifier optional extra number
 func (sde *SimpleExpression) handleTokenModifier(tok, nextToken Token) {
+	log.Debug("sde.modifier: ", sde.modifier, ", sde.modifierValue: ", sde.modifierValue,
+		", tok: ", tok, ", nextToken: ", nextToken)
 	switch nextToken.typ {
 	case tokenNumber:
 		sde.handleNextTokenNumber(tok, nextToken)
@@ -152,6 +159,8 @@ func (sde *SimpleExpression) handleTokenModifier(tok, nextToken Token) {
 
 // handlelTokenNumber handles the second or third tokenNumber
 func (sde *SimpleExpression) handleTokenNumber(tok, nextToken Token) {
+	log.Debug("sde.modifier: ", sde.modifier, ", sde.modifierValue: ", sde.modifierValue,
+		", tok: ", tok, ", nextToken: ", nextToken)
 	switch nextToken.typ {
 	case tokenDice:
 		log.Panicln("Unexpected modifier")
@@ -168,6 +177,8 @@ func (sde *SimpleExpression) handleTokenNumber(tok, nextToken Token) {
 
 // handleInitialTokenNumber handles the first token when it's a number
 func (sde *SimpleExpression) handleInitialTokenNumber(tok, nextToken Token) {
+	log.Debug("sde.modifier: ", sde.modifier, ", sde.modifierValue: ", sde.modifierValue,
+		", tok: ", tok, ", nextToken: ", nextToken)
 	switch nextToken.typ {
 	case tokenEOF:
 		sde.constant = extractTokenValue(tok)
@@ -176,14 +187,12 @@ func (sde *SimpleExpression) handleInitialTokenNumber(tok, nextToken Token) {
 	}
 }
 
-/**
- * Parse a simple dice expresion and save the relevant information on the struct
- */
+// parse a simple dice expresion and save the relevant information on the struct
 func (sde *SimpleExpression) parse() error {
 	firstToken := true
 	sde.expressionText = strings.TrimSpace(sde.expressionText)
 	if len(sde.expressionText) > MaxExpressionLength {
-		return ExpressionTooLong
+		return ErrExpressionTooLong
 	}
 	_, tokensChannel := lex(sde.expressionText)
 	for tok := range tokensChannel {
