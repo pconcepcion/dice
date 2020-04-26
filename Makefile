@@ -19,6 +19,7 @@ lint:
 fuzz: fuzz-build
 	@echo "running go-fuzz, Ctr-C to stop it, next run will start from where it was if the workdir is still intact"
 	go-fuzz -bin=dice-fuzz.zip -workdir=go-fuzz-workdir
+	mkdir -p go-fuzz-workdir/corpu 	
 
 fuzz-build: 
 	@echo "Building go-fuzz-build..."
@@ -28,6 +29,12 @@ clean:
 	go clean
 	rm -f dice-fuzz.zip
 
+clean-go-fuzz:
+	@echo "Cleaning go-fuzz-workdir"
+	rm -rf go-fuzz-workdir
+	rm -f dice-fuzz.zip
+	@echo "Recreating go-fuzz-workdir/corpus"
+	mkdir -p go-fuzz-workdir/corpus 
 deps: dev-deps
 
 dev-deps:
