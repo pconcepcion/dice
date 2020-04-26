@@ -186,7 +186,10 @@ func startState(l *lexer) stateFn {
 func diceState(l *lexer) stateFn {
 	l.emit(tokenDice)
 	next := l.peek()
-	
+	if next == eof {
+		l.emit(tokenEOF)
+		return nil
+	}
 	if !unicode.IsDigit(next) {
 		return l.errorf("expected digit after dice token, got %q", next)
 	}
@@ -195,8 +198,11 @@ func diceState(l *lexer) stateFn {
 
 // numberState gets the nuber of dices and emits the token the next state should be diceState
 func numberState(l *lexer) stateFn {
-
 	// 0 constant must be alone, not followed by any other digit
+	if l.peek() == eof {
+		l.emit(tokenEOF)
+		return nil
+	}
 	if l.accept("0") {
 		if unicode.IsDigit(l.peek()) {
 			return l.errorf("a number that starts with zero can't be followed by another digit, got %q", l.next())
@@ -222,6 +228,10 @@ func numberState(l *lexer) stateFn {
 
 // modifierExplodingState handles the e and es tokens
 func modifierExplodingState(l *lexer) stateFn {
+	if l.peek() == eof {
+		l.emit(tokenEOF)
+		return nil
+	}
 	if l.accept("s") {
 		// es
 		l.emit(tokenModifier)
@@ -264,9 +274,3 @@ func modifierState(l *lexer) stateFn {
 	return l.errorf("unexpected modifier token")
 }
 
-// Character classes
-
-// isWhitespace returns true when theceived rune is a whitespace
-func isWhitespace(ch rune) bool {
-	return ch == ' ' || ch == '\t' || ch == '\n'
-}
