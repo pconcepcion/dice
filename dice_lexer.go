@@ -170,7 +170,7 @@ func (l *lexer) acceptRun(valid string) {
 // emits it
 func startState(l *lexer) stateFn {
 	switch r := l.next(); {
-	case unicode.IsNumber(r):
+	case unicode.IsDigit(r):
 		l.backup()
 		return numberState
 	case r == eof:
@@ -179,14 +179,16 @@ func startState(l *lexer) stateFn {
 	case r == 'd':
 		return diceState
 	}
-	return l.errorf("unexpected token %v, expected either 'd' or number", l.next())
+	return l.errorf("unexpected token %v, expected either 'd' or digit", l.next())
 }
 
-// diceState emits a diceToken and verifies that the next token is a number
+// diceState emits a diceToken and verifies that the next token is a digit
 func diceState(l *lexer) stateFn {
 	l.emit(tokenDice)
-	if !unicode.IsNumber(l.peek()) {
-		return l.errorf("expected number after dice token, got %q", l.next())
+	next := l.peek()
+	
+	if !unicode.IsDigit(next) {
+		return l.errorf("expected digit after dice token, got %q", next)
 	}
 	return numberState
 }
@@ -196,18 +198,15 @@ func numberState(l *lexer) stateFn {
 
 	// 0 constant must be alone, not followed by any other digit
 	if l.accept("0") {
-		if unicode.IsNumber(l.peek()) {
+		if unicode.IsDigit(l.peek()) {
 			return l.errorf("a number that starts with zero can't be followed by another digit, got %q", l.next())
 		}
 		l.emit(tokenNumber)
 	} else {
-		/*if !l.accept(nonZeroDigits) {
-			return l.errorf("expecting non zero digit, got %q", l.next())
-		}
-		*/
 		l.acceptRun(digits)
 		l.emit(tokenNumber)
 	}
+	// Process the rune after the last digit and transition to the next state
 	switch r := l.next(); {
 	case r == 'd':
 		return diceState
@@ -218,7 +217,7 @@ func numberState(l *lexer) stateFn {
 		l.emit(tokenEOF)
 		return nil // finish the lexer
 	}
-	return l.errorf("unexpected token after num")
+	return l.errorf("unexpected token after number")
 }
 
 // modifierExplodingState handles the e and es tokens
@@ -230,7 +229,7 @@ func modifierExplodingState(l *lexer) stateFn {
 	}
 	// e
 	l.emit(tokenModifier)
-	if r := l.peek(); unicode.IsNumber(r) {
+	if r := l.peek(); unicode.IsDigit(r) {
 		return numberState
 	}
 	return startState
