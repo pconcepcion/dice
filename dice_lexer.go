@@ -185,13 +185,13 @@ func startState(l *lexer) stateFn {
 // diceState emits a diceToken and verifies that the next token is a digit
 func diceState(l *lexer) stateFn {
 	l.emit(tokenDice)
-	next := l.peek()
-	if next == eof {
+	peekNext := l.peek()
+	if peekNext == eof {
 		l.emit(tokenEOF)
 		return nil
 	}
-	if !unicode.IsDigit(next) {
-		return l.errorf("expected digit after dice token, got %q", next)
+	if !unicode.IsDigit(peekNext) {
+		return l.errorf("expected digit after dice token, got %q", peekNext)
 	}
 	return numberState
 }
@@ -199,9 +199,13 @@ func diceState(l *lexer) stateFn {
 // numberState gets the nuber of dices and emits the token the next state should be diceState
 func numberState(l *lexer) stateFn {
 	// 0 constant must be alone, not followed by any other digit
-	if l.peek() == eof {
+	peekNext := l.peek()
+	if peekNext == eof {
 		l.emit(tokenEOF)
 		return nil
+	}
+	if !unicode.IsDigit(peekNext) {
+		return l.errorf("received non digit (%v) on numberState", peekNext)
 	}
 	if l.accept("0") {
 		if unicode.IsDigit(l.peek()) {
@@ -228,10 +232,6 @@ func numberState(l *lexer) stateFn {
 
 // modifierExplodingState handles the e and es tokens
 func modifierExplodingState(l *lexer) stateFn {
-	if l.peek() == eof {
-		l.emit(tokenEOF)
-		return nil
-	}
 	if l.accept("s") {
 		// es
 		l.emit(tokenModifier)
@@ -241,6 +241,10 @@ func modifierExplodingState(l *lexer) stateFn {
 	l.emit(tokenModifier)
 	if r := l.peek(); unicode.IsDigit(r) {
 		return numberState
+	}
+	if l.peek() == eof {
+		l.emit(tokenEOF)
+		return nil
 	}
 	return startState
 }
