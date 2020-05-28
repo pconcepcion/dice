@@ -40,6 +40,10 @@ var (
 	// ErrExpressionTooLong is the error thrown when the string repressenting the expression is longer than
 	// MaxExpressionLength
 	ErrExpressionTooLong = errors.New("Expression Too Long")
+	// ErrUnexpectedToken is the error generated when the parser receives a valid token but not expected on the current state
+	ErrUnexpectedToken = errors.New("Unexpected Token")
+	// ErrUnexpecedModifier is the error when the value of the token modifier it's not valid
+	ErrUnexpecedModifier = errors.New("Unexpected modifier")
 )
 
 // var log = logrus.New()
@@ -67,14 +71,14 @@ type Roller interface {
 }
 
 // extractTokenValue extracts from the received Token the value and converts it to to an int
-// it will panic on failure
-func extractTokenValue(tok Token) int {
-	intValue, err := strconv.Atoi(tok.val)
+// it will return an erro on failure
+func extractTokenValue(tok Token) (int, error) {
+	intValur, err := strconv.Atoi(tok.val)
 	if err != nil {
-		log.Panicf("Unexpected token value, not an int, %v\n", tok)
-		panic("Unexpected token value, not an int")
+		log.Errorf("Unexpected token value, not an int, %v\n", tok)
+		return intValur, errors.Wrap(err, "Failed to convert from string to integer")
 	}
-	return intValue
+	return intValur, nil
 }
 
 // NewSimpleExpression creates a new SimpleExpression initialized expressionText received but
@@ -97,7 +101,7 @@ func NewParsedSimpleExpression(expression string) (*SimpleExpression, error) {
 }
 
 // handleNextTokenNumber handles the state when the next token is a tokenNumber
-func (sde *SimpleExpression) handleNextTokenNumber(tok, nextToken Token) {
+func (sde *SimpleExpression) handleNextTokenNumber(tok, nextToken Token) error {
 	log.Debug("sde.modifier: ", sde.modifier, ", sde.modifierValue: ", sde.modifierValue,
 		", tok: ", tok, ", nextToken: ", nextToken)
 	switch tok.val {
@@ -114,77 +118,103 @@ func (sde *SimpleExpression) handleNextTokenNumber(tok, nextToken Token) {
 	case "r":
 		sde.handleExtraTokenModifier(nextToken, reroll)
 	default:
-		log.Panicln("Unexpected modifier")
-		panic("Unexpected modifier")
+		log.Errorln("Unexpected modifier")
+		return ErrUnexpecedModifier
 	}
+	return nil
 }
 
 // handleExtraTokenModifier handles a modifier that requires a numeric extra token, stores the
 // modifier on sde and the extra token value on sde.modifierValue
-func (sde *SimpleExpression) handleExtraTokenModifier(nextToken Token, modifier diceModifier) {
+func (sde *SimpleExpression) handleExtraTokenModifier(nextToken Token, modifier diceModifier) (err error) {
 	log.Debug("sde.modifier: ", sde.modifier, ", sde.modifierValue: ", sde.modifierValue,
 		", newModifier: ", modifier, ", nextToken: ", nextToken)
-	sde.modifierValue = extractTokenValue(nextToken)
+  if sde.modifier != normal {
+    return errors.Wrap(ErrUnexpecedModifier, "Modifier already set")
+  }
+	sde.modifierValue, err = extractTokenValue(nextToken)
+	if err != nil {
+		return errors.Wrap(err, "Error handling extra token modifier")
+	}
 	sde.modifier = modifier
+	return nil
 }
 
 // handleNextTokenEOF handles the state when the next token is a tokenEOF
-func (sde *SimpleExpression) handleNextTokenEOF(tok, nextToken Token) {
+func (sde *SimpleExpression) handleNextTokenEOF(tok, nextToken Token) error {
 	log.Debug("sde.modifier: ", sde.modifier, ", sde.modifierValue: ", sde.modifierValue,
 		", tok: ", tok, ", nextToken: ", nextToken)
 	switch tok.val {
 	case "e":
 		sde.modifier = explode
 		sde.modifierValue = sde.sides
+		return nil
 	case "o":
 		sde.modifier = open
 		sde.modifierValue = sde.sides
+		return nil
+	default:
+		log.Errorln("Unexpected nextToken")
+		return ErrUnexpectedToken
 	}
 }
 
 // handleTokenMoffier handles the Modifier optional extra number
-func (sde *SimpleExpression) handleTokenModifier(tok, nextToken Token) {
+func (sde *SimpleExpression) handleTokenModifier(tok, nextToken Token) (err error) {
 	log.Debug("sde.modifier: ", sde.modifier, ", sde.modifierValue: ", sde.modifierValue,
 		", tok: ", tok, ", nextToken: ", nextToken)
 	switch nextToken.typ {
 	case tokenNumber:
 		sde.handleNextTokenNumber(tok, nextToken)
+		return nil
 	case tokenEOF:
-		sde.handleNextTokenEOF(tok, nextToken)
+		return sde.handleNextTokenEOF(tok, nextToken)
+
 	default:
-		log.Panicln("Unexpected nextToken")
-		panic("Unexpected nextToken")
+		log.Errorln("Unexpected nextToken")
+		return ErrUnexpectedToken
 	}
 }
 
 // handlelTokenNumber handles the second or third tokenNumber
-func (sde *SimpleExpression) handleTokenNumber(tok, nextToken Token) {
+func (sde *SimpleExpression) handleTokenNumber(tok, nextToken Token) (err error) {
 	log.Debug("sde.modifier: ", sde.modifier, ", sde.modifierValue: ", sde.modifierValue,
 		", tok: ", tok, ", nextToken: ", nextToken)
 	switch nextToken.typ {
 	case tokenDice:
-		log.Panicln("Unexpected modifier")
-		panic("Unexpected diceToken")
+		log.Errorln("Unexpected modifier")
+		return ErrUnexpecedModifier
 	case tokenModifier:
-		sde.sides = extractTokenValue(tok)
+    if sde.modifier != normal {
+      return errors.Wrap(ErrUnexpecedModifier, "Peek another modifier when modifier it's already set")
+    }
+		sde.sides, err = extractTokenValue(tok)
+		if err != nil {
+			return errors.Wrap(err, "Error hanling a token TokenNumber followed by a tokenModifier")
+		}
 	case tokenEOF:
 		if sde.sides == 0 {
-			sde.sides = extractTokenValue(tok)
+			sde.sides, err = extractTokenValue(tok)
+			return errors.Wrap(err, "Error hanling a token TokenNumber followed by a tokenEOF")
 		}
 		// if not the caller would know the modifier and assing to the propper place the value
 	}
+	return nil
 }
 
 // handleInitialTokenNumber handles the first token when it's a number
-func (sde *SimpleExpression) handleInitialTokenNumber(tok, nextToken Token) {
+func (sde *SimpleExpression) handleInitialTokenNumber(tok, nextToken Token) (err error) {
 	log.Debug("sde.modifier: ", sde.modifier, ", sde.modifierValue: ", sde.modifierValue,
 		", tok: ", tok, ", nextToken: ", nextToken)
 	switch nextToken.typ {
 	case tokenEOF:
-		sde.constant = extractTokenValue(tok)
+		sde.constant, err = extractTokenValue(tok)
+		return errors.Wrap(err, "Error hanling a token TokenNumber followed by a tokenEOF")
 	case tokenDice:
-		sde.numDices = extractTokenValue(tok)
+		sde.numDices, err = extractTokenValue(tok)
+		return errors.Wrap(err, "Error hanling a token TokenNumber followed by a tokenDice, tokenDice should only be the first token when the number of dices it's omited")
 	}
+	return nil
 }
 
 // parse a simple dice expresion and save the relevant information on the struct
@@ -207,10 +237,16 @@ func (sde *SimpleExpression) parse() error {
 			} else {
 				sde.handleTokenNumber(tok, nextToken)
 				if nextToken.typ == tokenModifier {
-					sde.handleTokenModifier(nextToken, <-tokensChannel)
+					err := sde.handleTokenModifier(nextToken, <-tokensChannel)
+					if err == ErrUnexpectedToken {
+						return err
+					}
 				}
 			}
 		case tokenDice:
+			if sde.numDices != 0 {
+        return errors.Wrap(ErrUnexpectedToken, "Received tokenDice when the number of dices was alredy set")
+      }
 			// Only found when then number was ommited so it's one dice
 			sde.numDices = 1
 		}

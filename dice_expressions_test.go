@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-// Test that Parse splits the dices properly
+// TestParse checks that Parse splits the dices properly
 func TestParse(t *testing.T) {
 	var parseTestStrings = []struct {
 		s   string
@@ -79,8 +79,26 @@ func TestParse(t *testing.T) {
 	}
 }
 
-//Roll() (DiceExpressionResult)
-// Test that Roll generates the correct results
+// TestParseErrors tests that Parse return the correct type of error when an error it's happening
+func TestParseErrors(t *testing.T) {
+	var parseTestStrings = []struct {
+		s string
+		e error
+	}{
+		{"0e0k4k", ErrUnexpectedToken},
+		{"6ed6d6ed6e", ErrUnexpectedToken},
+		{"0e4k", ErrUnexpectedToken},
+	}
+	for i, pts := range parseTestStrings {
+		sde := SimpleExpression{expressionText: pts.s}
+		err := sde.parse()
+		if err != pts.e {
+			t.Errorf("%d) : Error not properly handled  '%s' != ' %v'", i, pts.e, err)
+		}
+	}
+}
+
+// TestRoll checks  that Roll doesn't crash with different expressions 
 func TestRoll(t *testing.T) {
 	var parseTestStrings = []struct {
 		s   string
