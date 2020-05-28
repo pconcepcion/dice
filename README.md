@@ -25,7 +25,11 @@ make fuzz
 
 ### TODO 
 
-* [] Fix the cases found with `go-fuzz` that crass the library
+* [ ] Fix the cases found with `go-fuzz` that crass the library
+* [ ] Change the parser to use states as the lexer 
+* [ ] Improve error handling
+* [ ] Handle conplex dice expressions
+
 ### References
 
 * [go-fuzz github.com/arolek/ase](https://medium.com/@dgryski/go-fuzz-github-com-arolek-ase-3c74d5a3150c), quick totorial on how to fuzz using [go-fuzz](https://github.com/dvyukov/go-fuzz) 
