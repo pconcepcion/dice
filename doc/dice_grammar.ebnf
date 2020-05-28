@@ -1,4 +1,6 @@
 DigitExcludingZero ::= [1-9]
+RightParenthesis ::=")"
+LeftParenthesis ::="("
 Digit ::= [0-9]
 Dice ::= "d"
 Explode ::= "e"
@@ -9,11 +11,11 @@ Reroll ::= "r"
 Success ::= "s"
 ExplodingSuccess ::= "es"
 Natural  ::= DigitExcludingZero Digit*
-Modifier ::=  Keep Natural |  KeepLower Natural | Explode Natural?  | ExplodingSuccess Natural | Open | Reroll  Natural| Success Natural
+NaturalPlusZero ::= "0" | Natural
+Modifier ::=  Keep NaturalPlusZero |  KeepLower NaturalPlusZero | Explode Natural? | ExplodingSuccess NaturalPlusZero | Open | Reroll  Natural| Success NaturalPlusZero
 NumDices ::= Natural
 NumSides ::= Natural
-Constant ::= Natural
+Constant ::= NaturalPlusZero
 BasicDiceExpression ::= (NumDices? Dice NumSides Modifier?)|Constant
 ExpressionOperators ::=  [-*/+]
-DiceExpressiion ::= BasicDiceExpression (ExpressionOperators BasicDiceExpression)*
-
+DiceExpressiion ::= BasicDiceExpression (ExpressionOperators BasicDiceExpression)*| LeftParenthesis DiceExpression RightParenthesis
