@@ -101,9 +101,9 @@ func TestLexer(t *testing.T) {
 
 		if !assertEqualTokenSlices(lts.out, resultTokens) {
 			t.Error("Expected value: ", lts.out, " obtaned: ", resultTokens)
-			fmt.Printf("Lexer Test %d KO. Expected value: %v obtained  %v\n", i, lts.out, resultTokens)
+			fmt.Printf("Lexer Test %d KO: (%q).\nExpected value: %v\nobtained value: %v\n", i, lts.s, lts.out, resultTokens)
 		} else {
-			fmt.Printf("Lexer Test %d OK: %s\n", i, resultTokens)
+			fmt.Printf("Lexer Test %d OK: %q -> %s\n", i, lts.s, resultTokens)
 		}
 		resultTokens = []Token{}
 	}
@@ -122,15 +122,70 @@ func TestFuzzLexer(t *testing.T) {
 		s   string
 		out []Token
 	}{
+		// Valid lexical expressions might not be sintactically correct, but then the parser should detect the error
 		{"0e0k4k", []Token{{tokenNumber, "0"}, {tokenModifier, "e"}, {tokenNumber, "0"}, {tokenModifier, "k"}, {tokenNumber, "4"}, {tokenModifier, "k"}, {tokenEOF, ""}}},
-		{"3ss", []Token{{tokenNumber, "3"}, {tokenModifier, "s"}, {tokenError, "received non digit (115) on numberState"}}},
 		{"6ed6d6ed6e", []Token{{tokenNumber, "6"}, {tokenModifier, "e"}, {tokenDice, "d"}, {tokenNumber, "6"}, {tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "e"}, {tokenDice, "d"}, {tokenNumber, "6"}, {tokenModifier, "e"}, {tokenEOF, ""}}},
-		{"0e0e00", []Token{{tokenNumber, "0"}, {tokenModifier, "e"}, {tokenNumber, "0"}, {tokenModifier, "e"}, {tokenError, "a number that starts with zero can't be followed by another digit, got '0'"}}},
-		{"1kk", []Token{{tokenNumber, "1"}, {tokenModifier, "k"}, {tokenError, "received non digit (107) on numberState"}}},
 		{"0e4k", []Token{{tokenNumber, "0"}, {tokenModifier, "e"}, {tokenNumber, "4"}, {tokenModifier, "k"}, {tokenEOF, ""}}},
+		// Expresions with errors detected by the lexer
+		{"3ss", []Token{{tokenNumber, "3"}, {tokenModifier, "s"}, {tokenError, "received non digit (115) on numberState"}}},
+		{"1kk", []Token{{tokenNumber, "1"}, {tokenModifier, "k"}, {tokenError, "received non digit (107) on numberState"}}},
+		{"0e0e00", []Token{{tokenNumber, "0"}, {tokenModifier, "e"}, {tokenNumber, "0"}, {tokenModifier, "e"}, {tokenError, "a number that starts with zero can't be followed by another digit, got '0'"}}},
 		{"6s0st", []Token{{tokenNumber, "6"}, {tokenModifier, "s"}, {tokenNumber, "0"}, {tokenModifier, "s"}, {tokenError, "received non digit (116) on numberState"}}},
-		//{"0e0e\x1ce0", []Token{{tokenNumber, "0"}, {tokenModifier, "e"}, {tokenNumber, "0"}, {tokenModifier, "e"}, {tokenError, "unexpecetd token \u001C, expected either 'd' or number]"}}},
-		/*	{"1kd𨯯\xd0\xfd", []Token{{tokenEOF, ""}}},
+		{"0e4ë7", []Token{{tokenNumber, "0"}, {tokenModifier, "e"}, {tokenNumber, "4"}, {tokenModifier, "̈̈e"}}},
+		{"0e0e\x1ce0", []Token{{tokenNumber, "0"}, {tokenModifier, "e"}, {tokenNumber, "0"}, {tokenModifier, "e"}, {tokenError, "unexpecetd token \u001C, expected either 'd' or digit]"}}},
+		{"1k4e20ke", []Token{Token{tokenNumber, "1"}, Token{tokenModifier, "k"}, Token{tokenNumber, "4"}, Token{tokenModifier, "e"}, Token{tokenNumber, "20"}, Token{tokenModifier, "k"}, Token{tokenError, "received non digit (101) on numberState"}}},
+		{"4r4r:r4r4r", []Token{Token{tokenNumber, "4"}, Token{tokenModifier, "r"}, Token{tokenNumber, "4"}, Token{tokenModifier, "r"}, {tokenError, "received non digit (58) on numberState"}}},
+		/*
+			{"1kd𨯯\xd0\xfd", []Token{{tokenEOF, ""}}},
+			{"0o0sJo08e", []Token{{tokenEOF, ""}}},
+			{"9o99o9e", []Token{{tokenEOF, ""}}},
+			{"\u200a 9k9k<k", []Token{{tokenEOF, ""}}},
+			{"0d0d7", []Token{{tokenEOF, ""}}},
+			{"2o0o2o", []Token{{tokenEOF, ""}}},
+			{"9e9sSe9k9", []Token{{tokenEOF, ""}}},
+			{"0o0sMo0", []Token{{tokenEOF, ""}}},
+			{"874s0o0o", []Token{{tokenEOF, ""}}},
+			{"d9e9d502d", []Token{{tokenEOF, ""}}},
+			{"d9ee9d", []Token{{tokenEOF, ""}}},
+			{"d9e9d9eJd9", []Token{{tokenEOF, ""}}},
+			{"d9d9\xf6\xef", []Token{{tokenEOF, ""}}},
+			{"d9e\xff\xff\x00\x00\x00@9", []Token{{tokenEOF, ""}}},
+			{"d9d9e\xef", []Token{{tokenEOF, ""}}},
+			{"0d94d", []Token{{tokenEOF, ""}}},
+			{"9e9k\x01", []Token{{tokenEOF, ""}}},
+			{"9d9d9e9e9", []Token{{tokenEOF, ""}}},
+			{"9e9o9e9e", []Token{{tokenEOF, ""}}},
+			{"9e9k9e9kZ", []Token{{tokenEOF, ""}}},
+			{"9e9e\x01\x009e9e", []Token{{tokenEOF, ""}}},
+			{"9o9oo", []Token{{tokenEOF, ""}}},
+			{"0o2s048{0", []Token{{tokenEOF, ""}}},
+			{"7r4o4r4r4r", []Token{{tokenEOF, ""}}},
+			{"9k9k\x01k9k", []Token{{tokenEOF, ""}}},
+			{"d9e9e9d9", []Token{{tokenEOF, ""}}},
+			{"d9e9e9d9dd", []Token{{tokenEOF, ""}}},
+			{"d9e9d9o9d9", []Token{{tokenEOF, ""}}},
+			{"699e9d", []Token{{tokenEOF, ""}}},
+			{"9e99e𑶩", []Token{{tokenEOF, ""}}},
+			{"9e9d     \x00", []Token{{tokenEOF, ""}}},
+			{"3es4d\x804es", []Token{{tokenEOF, ""}}},
+			{"4e0e\x05)", []Token{{tokenEOF, ""}}},
+			{"9e9e\xf0\x91", []Token{{tokenEOF, ""}}},
+			{"5e5e߀\xdf\x00", []Token{{tokenEOF, ""}}},
+			{"d99d9", []Token{{tokenEOF, ""}}},
+			{"9o0s0o0o0", []Token{{tokenEOF, ""}}},
+			{"8e1k\xff", []Token{{tokenEOF, ""}}},
+			{"9o0oo", []Token{{tokenEOF, ""}}},
+			{"19e1d9e9dd", []Token{{tokenEOF, ""}}},
+			{"8e8e\xca\xca\xef", []Token{{tokenEOF, ""}}},
+			{"8k95e߀", []Token{{tokenEOF, ""}}},
+			{"54r4e߀", []Token{{tokenEOF, ""}}},
+			{"0o90o90s", []Token{{tokenEOF, ""}}},
+			{"9k9kF", []Token{{tokenEOF, ""}}},
+			{"9k9o9k", []Token{{tokenEOF, ""}}},
+			{"0s9o9s50", []Token{{tokenEOF, ""}}},
+			{"9o9o99s", []Token{{tokenEOF, ""}}},
+			{"d187d𑶖", []Token{{tokenEOF, ""}}},
+			{"d9d9eedd", []Token{{tokenEOF, ""}}},
 					{"d4e8d0d4k0", []Token{{tokenEOF, ""}}},
 					{"0e4ë7", []Token{{tokenEOF, ""}}},
 					{"3e0s\x15e0s0", []Token{{tokenEOF, ""}}},
@@ -138,7 +193,7 @@ func TestFuzzLexer(t *testing.T) {
 					{"0e4e\x80\xaf", []Token{{tokenEOF, ""}}},
 					{"192e0o4e", []Token{{tokenEOF, ""}}},
 					{"444k4k4k4k", []Token{{tokenEOF, ""}}},
-				{"6ed6e6e6ed", []Token{{tokenEOF, ""}}},
+					{"6ed6e6e6ed", []Token{{tokenEOF, ""}}},
 					{"0e4e)e4e", []Token{{tokenEOF, ""}}},
 					{"0o40o4o", []Token{{tokenEOF, ""}}},
 					{"0e0ee4", []Token{{tokenEOF, ""}}},
@@ -452,8 +507,7 @@ func TestFuzzLexer(t *testing.T) {
 					{"0d4k0e4kd", []Token{{tokenEOF, ""}}},
 					{"0o4e0o4o4o", []Token{{tokenEOF, ""}}},
 					{"3ss4}w", []Token{{tokenEOF, ""}}},
-					{"0d4k\x00\x104k0d", []Token{{tokenEOF, ""}}},
-			    {"1k4e20ke", []Token{{tokenEOF, ""}}},
+			    {"0d4k\x00\x104k0d", []Token{{tokenEOF, ""}}},
 		*/
 	}
 	var resultTokens = []Token{}
@@ -465,11 +519,12 @@ func TestFuzzLexer(t *testing.T) {
 
 		if !assertEqualTokenSlices(lts.out, resultTokens) {
 			t.Error("Expected value: ", lts.out, " obtaned: ", resultTokens)
-			t.Logf("Lexer Test %d KO.\nExpected value: %#v\nobtained value: %#v\n", i, lts.out, resultTokens)
+			t.Logf("Lexer Test %d KO (%q).\nExpected value: %#v\nobtained value: %#v\n", i, lts.s, lts.out, resultTokens)
+			failures++
 		} else {
-			t.Logf("Lexer Test %d OK: %v\n", i, resultTokens)
+			t.Logf("Lexer Test %d OK: %q -> %v\n", i, lts.s, resultTokens)
 		}
 		resultTokens = []Token{}
 	}
-	t.Logf("\nsFailures: %d", failures)
+	t.Logf("\nFailed %d out of %d tested expressions", failures, len(lexerTestStrings))
 }

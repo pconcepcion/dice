@@ -43,6 +43,8 @@ var eof = rune(0)
 const digits = "0123456789"
 const nonZeroDigits = "123456789"
 
+//const validCharacters = nonZeroDigits + "deklors"
+
 // Token represents a token of the lexer, and has a type and a value (a string)
 type Token struct {
 	typ tokenType
@@ -60,7 +62,7 @@ func (t Token) String() string {
 	if len(t.val) > 10 {
 		return fmt.Sprintf("%.10q...", t.val)
 	}
-	return fmt.Sprintf("%q", t.val)
+	return fmt.Sprintf("% x", t.val)
 }
 
 // stateFn represents the state of the scanner as a function that returns the
@@ -277,4 +279,3 @@ func modifierState(l *lexer) stateFn {
 	}
 	return l.errorf("unexpected modifier token")
 }
-
