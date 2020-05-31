@@ -1,6 +1,8 @@
+build_date = -X github.com/pconcepcion/telegram_dice_bot/cmd.BuildDate=`date -u '+%Y-%m-%d_%I:%M:%S%p'`
+commit_hash = -X github.com/pconcepcion/telegram_dice_bot/cmd.CommitHash=`git rev-parse HEAD`
 build:
 	go generate ./...
-	go build -ldflags "-X github.com/pconcepcion/dice/cmd.BuildDate=`date -u '+%Y-%m-%d_%I:%M:%S%p'` -X github.com/pconcepcion/dice/cmd.CommitHash=`git rev-parse HEAD`" -o dice ./cmd/main.go
+	go build -ldflags "$(build_date) $(commit_hash)" -o dice ./cmd/main.go
 
 install:
 	go install
@@ -18,11 +20,11 @@ lint:
 	errcheck ./...
 
 fuzz: fuzz-build
-	mkdir -p go-fuzz-workdir/corpus 
+	mkdir -p go-fuzz-workdir/corpus
 	@echo "running go-fuzz, Ctr-C to stop it, next run will start from where it was if the workdir is still intact"
 	go-fuzz -bin=dice-fuzz.zip -workdir=go-fuzz-workdir
 
-fuzz-build: 
+fuzz-build:
 	@echo "Building go-fuzz-build..."
 	go-fuzz-build github.com/pconcepcion/dice
 
@@ -35,7 +37,7 @@ clean-go-fuzz:
 	rm -rf go-fuzz-workdir
 	rm -f dice-fuzz.zip
 	@echo "Recreating go-fuzz-workdir/corpus"
-	mkdir -p go-fuzz-workdir/corpus 
+	mkdir -p go-fuzz-workdir/corpus
 deps: dev-deps
 
 dev-deps:
